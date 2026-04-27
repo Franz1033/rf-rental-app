@@ -231,6 +231,11 @@ export default function ActiveTimersPage() {
                     Math.min(100, (remainingSeconds / totalSeconds) * 100),
                   )
                 : 0;
+            const endTime = new Date(Date.now() + remainingSeconds * 1000);
+            const formattedEndTime = endTime.toLocaleTimeString([], {
+              hour: "numeric",
+              minute: "2-digit",
+            });
 
             return (
               <button
@@ -244,6 +249,9 @@ export default function ActiveTimersPage() {
                     <b className="block">{item.floatName}</b>
                     <span className="block text-xs text-slate-600">
                       {rental.id} · {formatRentalDuration(item.durationMinutes)}
+                    </span>
+                    <span className="mt-1 text-xs text-slate-600">
+                      Ends at {formattedEndTime}
                     </span>
                   </div>
                   <CountdownDisplay
@@ -313,11 +321,15 @@ function CountdownDisplay({
       <div className="mt-1 flex items-start justify-end gap-1">
         {segments.map(([label, value]) => (
           <div className="flex items-start gap-1" key={label}>
-            <span className={`grid min-w-10 rounded-md px-2 py-1 text-center ${valueClassName}`}>
+            <span
+              className={`grid min-w-10 rounded-md px-2 py-1 text-center ${valueClassName}`}
+            >
               <b className="font-mono text-base leading-4">
                 {String(value).padStart(2, "0")}
               </b>
-              <span className={`text-[9px] font-bold uppercase leading-3 ${labelClassName}`}>
+              <span
+                className={`text-[9px] font-bold uppercase leading-3 ${labelClassName}`}
+              >
                 {label}
               </span>
             </span>
