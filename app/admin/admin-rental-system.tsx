@@ -373,12 +373,10 @@ export default function AdminRentalSystem() {
           : "Point the camera at the rental QR code. Using Safari fallback scanner.",
       );
 
-      await new Promise((resolve) => requestAnimationFrame(resolve));
-
       const video = videoRef.current;
 
       if (!video) {
-        setScannerMessage("Camera preview could not load.");
+        setScannerMessage("Camera preview element is missing.");
         stopCameraScanner();
         return;
       }
@@ -537,15 +535,15 @@ export default function AdminRentalSystem() {
               />
             </label>
           </div>
-          {isCameraOpen && (
-            <video
-              autoPlay
-              muted
-              playsInline
-              ref={videoRef}
-              className="mt-3 block aspect-video w-full rounded-md bg-black object-cover"
-            />
-          )}
+          <video
+            autoPlay
+            muted
+            playsInline
+            ref={videoRef}
+            className={`mt-3 aspect-video w-full rounded-md bg-black object-cover ${
+              isCameraOpen ? "block" : "hidden"
+            }`}
+          />
           {scannerMessage && (
             <p className="mt-3 rounded-md bg-white/10 p-3 text-sm text-white/75">
               {scannerMessage}
