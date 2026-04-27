@@ -1,2 +1,4 @@
 [ ] - Re enable the mobile verification code field
+[ ] - Wait for sender name to be approved on Semaphore then check
+      the SMS verification and notification functionalities
 [ ] - Add rental catalog item management and CRUD functionalities on admin
