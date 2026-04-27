@@ -275,6 +275,34 @@ export default function AdminRentalSystem() {
     setIsCameraOpen(false);
   }
 
+  const waitForVideoReady = (video: HTMLVideoElement) =>
+    new Promise<void>((resolve, reject) => {
+      if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+        resolve();
+        return;
+      }
+
+      const handleReady = () => {
+        cleanup();
+        resolve();
+      };
+      const handleError = () => {
+        cleanup();
+        reject(new Error("Camera preview could not start."));
+      };
+      const cleanup = () => {
+        video.removeEventListener("loadedmetadata", handleReady);
+        video.removeEventListener("loadeddata", handleReady);
+        video.removeEventListener("canplay", handleReady);
+        video.removeEventListener("error", handleError);
+      };
+
+      video.addEventListener("loadedmetadata", handleReady, { once: true });
+      video.addEventListener("loadeddata", handleReady, { once: true });
+      video.addEventListener("canplay", handleReady, { once: true });
+      video.addEventListener("error", handleError, { once: true });
+    });
+
   const scanVideoFrameWithJsQr = (video: HTMLVideoElement) => {
     const width = video.videoWidth;
     const height = video.videoHeight;
@@ -323,7 +351,9 @@ export default function AdminRentalSystem() {
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
+        video: {
+          facingMode: { ideal: "environment" },
+        },
       });
 
       streamRef.current = stream;
@@ -335,8 +365,17 @@ export default function AdminRentalSystem() {
       );
 
       if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
+        const video = videoRef.current;
+        video.srcObject = stream;
+        video.muted = true;
+        video.autoplay = true;
+        video.playsInline = true;
+        video.setAttribute("muted", "");
+        video.setAttribute("autoplay", "");
+        video.setAttribute("playsinline", "");
+        video.setAttribute("webkit-playsinline", "true");
+        await video.play();
+        await waitForVideoReady(video);
       }
 
       const scan = async () => {
@@ -483,6 +522,7 @@ export default function AdminRentalSystem() {
             </div>
             {isCameraOpen && (
               <video
+                autoPlay
                 className="mt-3 aspect-video w-full rounded-md bg-black object-cover"
                 muted
                 playsInline
