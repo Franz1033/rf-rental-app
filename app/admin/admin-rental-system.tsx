@@ -116,9 +116,7 @@ export default function AdminRentalSystem() {
     if (
       !now ||
       pendingRentals.length === 0 ||
-      !pendingRentals.some(
-        (rental) => getPendingExpiryTimestamp(rental) <= now,
-      )
+      !pendingRentals.some((rental) => getPendingExpiryTimestamp(rental) <= now)
     ) {
       return;
     }
@@ -350,38 +348,56 @@ export default function AdminRentalSystem() {
     const detector = getBarcodeDetector();
 
     try {
+      stopCameraScanner();
+
+      if (!navigator.mediaDevices?.getUserMedia) {
+        setScannerMessage("Camera is not supported on this browser.");
+        return;
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({
+        audio: false,
         video: {
-          facingMode: { ideal: "environment" },
+          facingMode: "environment",
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
         },
       });
 
       streamRef.current = stream;
       setIsCameraOpen(true);
+
       setScannerMessage(
         detector
           ? "Point the camera at the rental QR code."
           : "Point the camera at the rental QR code. Using Safari fallback scanner.",
       );
 
-      if (videoRef.current) {
-        const video = videoRef.current;
-        video.srcObject = stream;
-        video.muted = true;
-        video.autoplay = true;
-        video.playsInline = true;
-        video.setAttribute("muted", "");
-        video.setAttribute("autoplay", "");
-        video.setAttribute("playsinline", "");
-        video.setAttribute("webkit-playsinline", "true");
-        await video.play();
-        await waitForVideoReady(video);
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+
+      const video = videoRef.current;
+
+      if (!video) {
+        setScannerMessage("Camera preview could not load.");
+        stopCameraScanner();
+        return;
       }
 
+      video.srcObject = stream;
+      video.muted = true;
+      video.autoplay = true;
+      video.playsInline = true;
+
+      video.setAttribute("muted", "true");
+      video.setAttribute("autoplay", "true");
+      video.setAttribute("playsinline", "true");
+      video.setAttribute("webkit-playsinline", "true");
+
+      await waitForVideoReady(video);
+      await video.play();
+
       const scan = async () => {
-        if (!videoRef.current || !streamRef.current) {
-          return;
-        }
+        if (!videoRef.current || !streamRef.current) return;
 
         const rawValue = await scanVideoFrame(videoRef.current, detector);
 
@@ -394,7 +410,8 @@ export default function AdminRentalSystem() {
       };
 
       scanFrameRef.current = requestAnimationFrame(scan);
-    } catch {
+    } catch (error) {
+      console.error(error);
       setScannerMessage("Camera access was blocked or unavailable.");
       stopCameraScanner();
     }
@@ -426,56 +443,30 @@ export default function AdminRentalSystem() {
     <section className="space-y-5">
       <div className="mx-auto grid max-w-5xl items-start gap-6 lg:grid-cols-2">
         <section className="min-w-0 w-full max-w-full overflow-hidden rounded-lg border border-slate-900/80 bg-slate-950 p-4 text-white box-border">
-            <h2 className="text-2xl font-bold">Retrieve rental</h2>
-            <p className="mt-2 text-sm text-white/65">
-              Scan, upload, or enter the rental code.
-            </p>
-            <div className="relative mt-4">
-              <input
-                className="h-12 w-full rounded-md border border-white/20 bg-white px-3 pr-12 text-base font-bold text-slate-950 outline-none"
-                onChange={(event) =>
-                  setScanCode(event.target.value.toUpperCase())
-                }
-                aria-label="Rental code"
-                autoComplete="off"
-                placeholder="Enter rental code..."
-                spellCheck={false}
-                value={scanCode}
-              />
-              {scanCode && (
-                <button
-                  aria-label="Clear rental code"
-                  className="absolute right-2 top-1/2 inline-flex size-8 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-                  onClick={() => {
-                    setScanCode("");
-                    setScannerMessage("");
-                  }}
-                  type="button"
-                >
-                  <svg
-                    aria-hidden="true"
-                    className="size-4"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M6 6l12 12" />
-                    <path d="M18 6L6 18" />
-                  </svg>
-                </button>
-              )}
-            </div>
-            <div className="mt-3 grid grid-cols-2 gap-2">
+          <h2 className="text-2xl font-bold">Retrieve rental</h2>
+          <p className="mt-2 text-sm text-white/65">
+            Scan, upload, or enter the rental code.
+          </p>
+          <div className="relative mt-4">
+            <input
+              className="h-12 w-full rounded-md border border-white/20 bg-white px-3 pr-12 text-base font-bold text-slate-950 outline-none"
+              onChange={(event) =>
+                setScanCode(event.target.value.toUpperCase())
+              }
+              aria-label="Rental code"
+              autoComplete="off"
+              placeholder="Enter rental code..."
+              spellCheck={false}
+              value={scanCode}
+            />
+            {scanCode && (
               <button
-                className={`flex h-11 items-center justify-center gap-2 rounded-md px-3 text-sm font-bold transition ${
-                  isCameraOpen
-                    ? "bg-white/85 text-slate-950"
-                    : "bg-white text-slate-950 hover:bg-white/90"
-                }`}
-                onClick={isCameraOpen ? stopCameraScanner : startCameraScanner}
+                aria-label="Clear rental code"
+                className="absolute right-2 top-1/2 inline-flex size-8 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                onClick={() => {
+                  setScanCode("");
+                  setScannerMessage("");
+                }}
                 type="button"
               >
                 <svg
@@ -488,67 +479,93 @@ export default function AdminRentalSystem() {
                   strokeWidth="2"
                   viewBox="0 0 24 24"
                 >
-                  <path d="M4 7a3 3 0 0 1 3-3h2" />
-                  <path d="M20 7a3 3 0 0 0-3-3h-2" />
-                  <path d="M4 17a3 3 0 0 0 3 3h2" />
-                  <path d="M20 17a3 3 0 0 1-3 3h-2" />
-                  <path d="M9 12h6" />
+                  <path d="M6 6l12 12" />
+                  <path d="M18 6L6 18" />
                 </svg>
-                {isCameraOpen ? "Stop scan" : "Scan QR"}
               </button>
-              <label className="flex h-11 cursor-pointer items-center justify-center gap-2 rounded-md border border-white/20 px-3 text-sm font-bold text-white transition hover:bg-white/5">
-                <svg
-                  aria-hidden="true"
-                  className="size-4"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M12 16V4" />
-                  <path d="M8 8l4-4 4 4" />
-                  <path d="M5 20h14" />
-                </svg>
-                Upload QR
-                <input
-                  accept="image/*"
-                  className="sr-only"
-                  onChange={scanUploadedQr}
-                  type="file"
-                />
-              </label>
-            </div>
-            {isCameraOpen && (
-              <video
-                autoPlay
-                className="mt-3 aspect-video w-full rounded-md bg-black object-cover"
-                muted
-                playsInline
-                ref={videoRef}
-              />
             )}
-            {scannerMessage && (
-              <p className="mt-3 rounded-md bg-white/10 p-3 text-sm text-white/75">
-                {scannerMessage}
-              </p>
-            )}
-            {scannedRental ? (
-              <RentalVerificationCard
-                now={now}
-                rental={scannedRental}
-                onActivate={activateRental}
-                onCancel={cancelRental}
-                onReturn={returnRental}
-                onReturnItem={returnRentalItem}
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <button
+              className={`flex h-11 items-center justify-center gap-2 rounded-md px-3 text-sm font-bold transition ${
+                isCameraOpen
+                  ? "bg-white/85 text-slate-950"
+                  : "bg-white text-slate-950 hover:bg-white/90"
+              }`}
+              onClick={isCameraOpen ? stopCameraScanner : startCameraScanner}
+              type="button"
+            >
+              <svg
+                aria-hidden="true"
+                className="size-4"
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path d="M4 7a3 3 0 0 1 3-3h2" />
+                <path d="M20 7a3 3 0 0 0-3-3h-2" />
+                <path d="M4 17a3 3 0 0 0 3 3h2" />
+                <path d="M20 17a3 3 0 0 1-3 3h-2" />
+                <path d="M9 12h6" />
+              </svg>
+              {isCameraOpen ? "Stop scan" : "Scan QR"}
+            </button>
+            <label className="flex h-11 cursor-pointer items-center justify-center gap-2 rounded-md border border-white/20 px-3 text-sm font-bold text-white transition hover:bg-white/5">
+              <svg
+                aria-hidden="true"
+                className="size-4"
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path d="M12 16V4" />
+                <path d="M8 8l4-4 4 4" />
+                <path d="M5 20h14" />
+              </svg>
+              Upload QR
+              <input
+                accept="image/*"
+                className="sr-only"
+                onChange={scanUploadedQr}
+                type="file"
               />
-            ) : lookupCode ? (
-              <p className="mt-3 rounded-md bg-rose-500/15 p-3 text-sm text-rose-100">
-                No rental found for {lookupCode}. Ask the customer to present
-                the latest QR pass.
-              </p>
-            ) : null}
+            </label>
+          </div>
+          {isCameraOpen && (
+            <video
+              autoPlay
+              muted
+              playsInline
+              ref={videoRef}
+              className="mt-3 block aspect-video w-full rounded-md bg-black object-cover"
+            />
+          )}
+          {scannerMessage && (
+            <p className="mt-3 rounded-md bg-white/10 p-3 text-sm text-white/75">
+              {scannerMessage}
+            </p>
+          )}
+          {scannedRental ? (
+            <RentalVerificationCard
+              now={now}
+              rental={scannedRental}
+              onActivate={activateRental}
+              onCancel={cancelRental}
+              onReturn={returnRental}
+              onReturnItem={returnRentalItem}
+            />
+          ) : lookupCode ? (
+            <p className="mt-3 rounded-md bg-rose-500/15 p-3 text-sm text-rose-100">
+              No rental found for {lookupCode}. Ask the customer to present the
+              latest QR pass.
+            </p>
+          ) : null}
         </section>
 
         <section className="w-full max-w-full overflow-hidden rounded-lg border border-slate-200 bg-white p-4 box-border lg:self-start">
@@ -571,8 +588,7 @@ export default function AdminRentalSystem() {
                       {rental.customerName}
                     </span>
                     <span className="mt-2 inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-800">
-                      Expires in{" "}
-                      {formatPendingCountdown(rental, now)}
+                      Expires in {formatPendingCountdown(rental, now)}
                     </span>
                   </div>
                   <div className="relative shrink-0">
