@@ -985,7 +985,8 @@ export default function RentalSystem() {
           <section className="rounded-lg bg-white p-4 text-center shadow-sm">
             <h2 className="mt-1 text-2xl font-bold">{currentRental.id}</h2>
             <p className="mt-1 text-sm text-slate-600">
-              Present QR code to cashier (expires in {formatPendingExpirationLabel()})
+              Present QR code to cashier (expires in{" "}
+              {formatPendingExpirationLabel()})
             </p>
             <div className="my-5">
               <QrPass rental={currentRental} />

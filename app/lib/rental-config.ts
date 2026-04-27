@@ -1,1 +1,1 @@
-export const pendingRentalExpirationMs = 60 * 60 * 1000;
+export const pendingRentalExpirationMs = 15 * 60 * 1000;
