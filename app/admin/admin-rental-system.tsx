@@ -33,6 +33,10 @@ type BarcodeDetectorConstructor = new (options?: { formats?: string[] }) => {
   detect: (source: CanvasImageSource) => Promise<BarcodeResult[]>;
 };
 
+type BarcodeDetectorInstance = {
+  detect: (source: CanvasImageSource) => Promise<BarcodeResult[]>;
+};
+
 export default function AdminRentalSystem() {
   const [rentals, updateRentals, refreshRentals] = useRentals();
   const [now, setNow] = useState(0);
@@ -241,7 +245,6 @@ export default function AdminRentalSystem() {
     ).BarcodeDetector as BarcodeDetectorConstructor | undefined;
 
     if (!Detector) {
-      setScannerMessage("QR scanning is not supported in this browser.");
       return null;
     }
 
@@ -272,12 +275,51 @@ export default function AdminRentalSystem() {
     setIsCameraOpen(false);
   }
 
+  const scanVideoFrameWithJsQr = (video: HTMLVideoElement) => {
+    const width = video.videoWidth;
+    const height = video.videoHeight;
+
+    if (!width || !height) {
+      return "";
+    }
+
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d", {
+      willReadFrequently: true,
+    });
+
+    if (!context) {
+      return "";
+    }
+
+    canvas.width = width;
+    canvas.height = height;
+    context.drawImage(video, 0, 0, width, height);
+
+    const imageData = context.getImageData(0, 0, width, height);
+    const result = jsQR(imageData.data, imageData.width, imageData.height);
+
+    return result?.data ?? "";
+  };
+
+  const scanVideoFrame = async (
+    video: HTMLVideoElement,
+    detector: BarcodeDetectorInstance | null,
+  ) => {
+    if (detector) {
+      try {
+        const results = await detector.detect(video);
+        return results[0]?.rawValue ?? "";
+      } catch {
+        return scanVideoFrameWithJsQr(video);
+      }
+    }
+
+    return scanVideoFrameWithJsQr(video);
+  };
+
   const startCameraScanner = async () => {
     const detector = getBarcodeDetector();
-
-    if (!detector) {
-      return;
-    }
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -286,7 +328,11 @@ export default function AdminRentalSystem() {
 
       streamRef.current = stream;
       setIsCameraOpen(true);
-      setScannerMessage("Point the camera at the rental QR code.");
+      setScannerMessage(
+        detector
+          ? "Point the camera at the rental QR code."
+          : "Point the camera at the rental QR code. Using Safari fallback scanner.",
+      );
 
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
@@ -298,9 +344,9 @@ export default function AdminRentalSystem() {
           return;
         }
 
-        const results = await detector.detect(videoRef.current);
+        const rawValue = await scanVideoFrame(videoRef.current, detector);
 
-        if (results[0]?.rawValue && applyScannedValue(results[0].rawValue)) {
+        if (rawValue && applyScannedValue(rawValue)) {
           stopCameraScanner();
           return;
         }
