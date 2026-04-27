@@ -277,7 +277,7 @@ async function expireStalePendingRentals(client: Client) {
   );
 }
 
-function expirePendingRentalRecord(rental: RentalRecord) {
+function expirePendingRentalRecord(rental: RentalRecord): RentalRecord {
   if (
     rental.status !== "pending" ||
     rental.createdAt + pendingRentalExpirationMs > Date.now()
@@ -322,7 +322,7 @@ async function getExistingRentalStates(
 function preserveTerminalRentalState(
   rental: RentalRecord,
   existingRental: ExistingRentalStateRow | undefined,
-) {
+): RentalRecord {
   if (!existingRental) {
     return rental;
   }
