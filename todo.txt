@@ -1,0 +1,2 @@
+[ ] - Re enable the mobile verification code field
+[ ] - Add rental catalog item management and CRUD functionalities on admin

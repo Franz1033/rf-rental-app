@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model RentalCatalogItem {
+  id         String   @id
+  name       String
+  price      Int
+  damageFee  Int
+  maxHours   Int      @default(1)
+  maxQuantity Int     @default(1)
+  accent     String
+  imageUrl   String
+  isActive   Boolean  @default(true)
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([isActive, sortOrder, name])
+}
+
+model Rental {
+  id               String       @id
+  floatId          String
+  floatName        String
+  price            Int
+  customerName     String
+  mobile           String
+  verificationCode String
+  paymentMode      String
+  amountDue        Int
+  status           String       @default("pending")
+  createdAt        DateTime     @default(now())
+  activatedAt      DateTime?
+  returnedAt       DateTime?
+  cancelledAt      DateTime?
+  smsSentAt        DateTime?
+  durationMinutes  Int
+  items            RentalItem[]
+
+  @@index([mobile, paymentMode, status, createdAt])
+  @@index([status, createdAt])
+}
+
+model RentalItem {
+  id              String @id @default(cuid())
+  rentalId        String
+  rental          Rental @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+  floatId         String
+  floatName       String
+  price           Int
+  quantity        Int
+  durationMinutes Int
+  subtotal        Int
+  returnedAt      DateTime?
+
+  @@index([rentalId])
+}
