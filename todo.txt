@@ -6,3 +6,7 @@
 [ ] - Admin should receive an SMS message when rent is over for notification reminder to get the rented pool floatie
     - Mobile number for admin could just be fixed or pre-filled
 [ ] - Ask what the sortOrder and accent is for in the catalog db
+[ ] - Add view cart button on the bottom right corner to easily checkout
+[ ] - Add cottage number field for customer input
+[ ] - Add cottage number field on scan view
+[ ] - Add a new page on admin to check for damage fees

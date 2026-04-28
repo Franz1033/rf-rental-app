@@ -1036,6 +1036,34 @@ export default function RentalSystem() {
           </section>
         )}
       </section>
+      {step === "choose" && cart.length > 0 && (
+        <button
+          type="button"
+          onClick={() =>
+            window.scrollTo({
+              top: 0,
+              behavior: "smooth",
+            })
+          }
+          className="fixed bottom-5 right-5 z-40 flex items-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-bold text-white shadow-xl transition hover:-translate-y-1 hover:bg-teal-700"
+        >
+          <svg
+            aria-hidden="true"
+            className="size-4"
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <circle cx="8" cy="21" r="1" />
+            <circle cx="19" cy="21" r="1" />
+            <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h8.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
+          </svg>
+          View Cart ({cart.length})
+        </button>
+      )}
       {toast && (
         <div className="pointer-events-none fixed inset-x-4 top-4 z-50 flex justify-center">
           <div className="w-full max-w-sm rounded-md bg-slate-950 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-950/25">
