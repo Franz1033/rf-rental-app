@@ -11,3 +11,6 @@
 [ ] - Add cottage number field on scan view
 [ ] - Add a new page on admin to check for damage fees
 [ ] - Fix the bug wherein it say that not found when QR scan when there in fact is. I have to refresh the page first then it will be okay. 
+[ ] - Change favicon and logo
+[ ] - Change name
+[ ] - General design/theme improvements
