@@ -186,7 +186,15 @@ export default function RentalSystem() {
   };
 
   const removeFromCart = (entryId: string) => {
-    setCart((current) => current.filter((item) => item.entryId !== entryId));
+    setCart((current) => {
+      const nextCart = current.filter((item) => item.entryId !== entryId);
+
+      if (nextCart.length === 0) {
+        setStep("choose");
+      }
+
+      return nextCart;
+    });
   };
 
   const updateCartItem = (

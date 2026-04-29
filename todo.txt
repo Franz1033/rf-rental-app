@@ -5,6 +5,7 @@
 [ ] - Fix the active rentals time discrepancy across different devices (it relies on csr client time)
 [ ] - Admin should receive an SMS message when rent is over for notification reminder to get the rented pool floatie
     - Mobile number for admin could just be fixed or pre-filled
+    - Another option could be they could set a mobile number to be used for need to return now notif
 [ ] - Ask what the sortOrder and accent is for in the catalog db
 [X] - Add view cart button on the bottom right corner to easily checkout
 [ ] - Add cottage number field for customer input
@@ -14,3 +15,4 @@
 [ ] - Change favicon and logo
 [ ] - Change name
 [ ] - General design/theme improvements
+[X] - Bug: When I delete something on checkout, page goes blank

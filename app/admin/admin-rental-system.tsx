@@ -43,12 +43,14 @@ export default function AdminRentalSystem() {
   const [scanCode, setScanCode] = useState("");
   const [scannerMessage, setScannerMessage] = useState("");
   const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [isResolvingLookup, setIsResolvingLookup] = useState(false);
   const [openPendingMenuId, setOpenPendingMenuId] = useState<string | null>(
     null,
   );
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const scanFrameRef = useRef<number | null>(null);
+  const attemptedLookupRef = useRef("");
 
   useEffect(() => {
     const tick = () => setNow(Date.now());
@@ -130,6 +132,25 @@ export default function AdminRentalSystem() {
     () => rentals.find((rental) => rental.id === lookupCode),
     [rentals, lookupCode],
   );
+
+  useEffect(() => {
+    if (!lookupCode) {
+      attemptedLookupRef.current = "";
+      setIsResolvingLookup(false);
+      return;
+    }
+
+    if (scannedRental || attemptedLookupRef.current === lookupCode) {
+      return;
+    }
+
+    attemptedLookupRef.current = lookupCode;
+    setIsResolvingLookup(true);
+
+    void refreshRentals().finally(() => {
+      setIsResolvingLookup(false);
+    });
+  }, [lookupCode, refreshRentals, scannedRental]);
 
   const activateRental = (rentalId: string) => {
     const rental = rentals.find((entry) => entry.id === rentalId);
@@ -558,6 +579,10 @@ export default function AdminRentalSystem() {
               onReturn={returnRental}
               onReturnItem={returnRentalItem}
             />
+          ) : lookupCode && isResolvingLookup ? (
+            <p className="mt-3 rounded-md bg-white/10 p-3 text-sm text-white/75">
+              Looking up rental {lookupCode}...
+            </p>
           ) : lookupCode ? (
             <p className="mt-3 rounded-md bg-rose-500/15 p-3 text-sm text-rose-100">
               No rental found for {lookupCode}. Ask the customer to present the
