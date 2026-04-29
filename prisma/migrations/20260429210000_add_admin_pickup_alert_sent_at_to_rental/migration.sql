@@ -1,0 +1,2 @@
+ALTER TABLE "Rental"
+ADD COLUMN IF NOT EXISTS "adminPickupAlertSentAt" TIMESTAMP(3);

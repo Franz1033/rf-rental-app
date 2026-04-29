@@ -7,6 +7,9 @@ import { useEffect, useState } from "react";
 const primaryLinks = [
   { href: "/admin", label: "Home" },
   { href: "/admin/active-timers", label: "Active Rentals" },
+  { href: "/admin/notifications", label: "Notifications" },
+  { href: "/admin/text-customer", label: "Text Customer" },
+  { href: "/admin/inventory", label: "Inventory" },
   { href: "/admin/records", label: "Rental Records" },
 ];
 

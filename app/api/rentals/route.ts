@@ -13,6 +13,7 @@ type RentalRow = {
   floatName: string;
   price: number;
   customerName: string;
+  cottageNumber: string;
   mobile: string;
   verificationCode: string;
   paymentMode: string;
@@ -23,6 +24,7 @@ type RentalRow = {
   returnedAt: Date | null;
   cancelledAt: Date | null;
   smsSentAt: Date | null;
+  adminPickupAlertSentAt: Date | null;
   durationMinutes: number;
   items: Array<{
     id: string;
@@ -51,6 +53,16 @@ type ExistingRentalStateRow = {
   cancelledAt: Date | null;
 };
 
+function jsonWithServerTime(body: unknown, init?: ResponseInit) {
+  const headers = new Headers(init?.headers);
+  headers.set("x-server-time", Date.now().toString());
+
+  return NextResponse.json(body, {
+    ...init,
+    headers,
+  });
+}
+
 export async function GET() {
   const client = createClient();
 
@@ -59,10 +71,10 @@ export async function GET() {
     await expireStalePendingRentals(client);
     const rentals = await getRentalsFromDb(client);
 
-    return NextResponse.json(rentals.map(toRentalRecord));
+    return jsonWithServerTime(rentals.map(toRentalRecord));
   } catch (error) {
     console.error("Unable to load rentals from the database.", error);
-    return NextResponse.json(
+    return jsonWithServerTime(
       { message: "Unable to load rentals from the database." },
       { status: 500 },
     );
@@ -84,7 +96,7 @@ export async function POST(request: Request) {
 
     if (cooldownMessage) {
       await client.query("ROLLBACK");
-      return NextResponse.json({ message: cooldownMessage }, { status: 409 });
+      return jsonWithServerTime({ message: cooldownMessage }, { status: 409 });
     }
 
     const availabilityMessage = await getAvailabilityMessageForRental(
@@ -94,7 +106,7 @@ export async function POST(request: Request) {
 
     if (availabilityMessage) {
       await client.query("ROLLBACK");
-      return NextResponse.json(
+      return jsonWithServerTime(
         { message: availabilityMessage },
         { status: 409 },
       );
@@ -103,11 +115,11 @@ export async function POST(request: Request) {
     const savedRental = await persistRental(client, rental);
     await client.query("COMMIT");
 
-    return NextResponse.json(toRentalRecord(savedRental), { status: 201 });
+    return jsonWithServerTime(toRentalRecord(savedRental), { status: 201 });
   } catch (error) {
     await client.query("ROLLBACK").catch(() => {});
     console.error("Unable to save this rental to the database.", error);
-    return NextResponse.json(
+    return jsonWithServerTime(
       { message: "Unable to save this rental to the database." },
       { status: 500 },
     );
@@ -139,7 +151,7 @@ export async function PUT(request: Request) {
 
     if (availabilityMessage) {
       await client.query("ROLLBACK");
-      return NextResponse.json(
+      return jsonWithServerTime(
         { message: availabilityMessage },
         { status: 409 },
       );
@@ -151,11 +163,11 @@ export async function PUT(request: Request) {
     }
 
     await client.query("COMMIT");
-    return NextResponse.json(savedRentals.map(toRentalRecord));
+    return jsonWithServerTime(savedRentals.map(toRentalRecord));
   } catch (error) {
     await client.query("ROLLBACK").catch(() => {});
     console.error("Unable to update rentals in the database.", error);
-    return NextResponse.json(
+    return jsonWithServerTime(
       { message: "Unable to update rentals in the database." },
       { status: 500 },
     );
@@ -182,6 +194,7 @@ async function getRentalsFromDb(client: Client) {
       r."floatName",
       r."price",
       r."customerName",
+      r."cottageNumber",
       r."mobile",
       r."verificationCode",
       r."paymentMode",
@@ -192,6 +205,7 @@ async function getRentalsFromDb(client: Client) {
       r."returnedAt",
       r."cancelledAt",
       r."smsSentAt",
+      r."adminPickupAlertSentAt",
       r."durationMinutes",
       COALESCE(
         json_agg(
@@ -556,6 +570,7 @@ async function persistRental(client: Client, rental: RentalRecord) {
         "floatName",
         "price",
         "customerName",
+        "cottageNumber",
         "mobile",
         "verificationCode",
         "paymentMode",
@@ -566,17 +581,19 @@ async function persistRental(client: Client, rental: RentalRecord) {
         "returnedAt",
         "cancelledAt",
         "smsSentAt",
+        "adminPickupAlertSentAt",
         "durationMinutes"
       )
       VALUES (
         $1, $2, $3, $4, $5, $6, $7, $8,
-        $9, $10, $11, $12, $13, $14, $15, $16
+        $9, $10, $11, $12, $13, $14, $15, $16, $17, $18
       )
       ON CONFLICT ("id") DO UPDATE SET
         "floatId" = EXCLUDED."floatId",
         "floatName" = EXCLUDED."floatName",
         "price" = EXCLUDED."price",
         "customerName" = EXCLUDED."customerName",
+        "cottageNumber" = EXCLUDED."cottageNumber",
         "mobile" = EXCLUDED."mobile",
         "verificationCode" = EXCLUDED."verificationCode",
         "paymentMode" = EXCLUDED."paymentMode",
@@ -587,6 +604,7 @@ async function persistRental(client: Client, rental: RentalRecord) {
         "returnedAt" = EXCLUDED."returnedAt",
         "cancelledAt" = EXCLUDED."cancelledAt",
         "smsSentAt" = EXCLUDED."smsSentAt",
+        "adminPickupAlertSentAt" = EXCLUDED."adminPickupAlertSentAt",
         "durationMinutes" = EXCLUDED."durationMinutes"
     `,
     [
@@ -595,6 +613,7 @@ async function persistRental(client: Client, rental: RentalRecord) {
       rental.floatName,
       rental.price,
       rental.customerName,
+      rental.cottageNumber,
       rental.mobile,
       rental.verificationCode,
       rental.paymentMode,
@@ -605,6 +624,7 @@ async function persistRental(client: Client, rental: RentalRecord) {
       toDate(rental.returnedAt),
       toDate(rental.cancelledAt),
       toDate(rental.smsSentAt),
+      toDate(rental.adminPickupAlertSentAt),
       rental.durationMinutes,
     ],
   );
@@ -659,6 +679,7 @@ async function getRentalById(client: Client, rentalId: string) {
         r."floatName",
         r."price",
         r."customerName",
+        r."cottageNumber",
         r."mobile",
         r."verificationCode",
         r."paymentMode",
@@ -669,6 +690,7 @@ async function getRentalById(client: Client, rentalId: string) {
         r."returnedAt",
         r."cancelledAt",
         r."smsSentAt",
+        r."adminPickupAlertSentAt",
         r."durationMinutes",
         COALESCE(
           json_agg(
@@ -714,6 +736,7 @@ function toRentalRecord(rental: RentalRow): RentalRecord {
       returnedAt: toTimestamp(item.returnedAt),
     })),
     customerName: rental.customerName,
+    cottageNumber: rental.cottageNumber,
     mobile: rental.mobile,
     verificationCode: rental.verificationCode,
     paymentMode: rental.paymentMode as RentalRecord["paymentMode"],
@@ -724,6 +747,7 @@ function toRentalRecord(rental: RentalRow): RentalRecord {
     returnedAt: toTimestamp(rental.returnedAt),
     cancelledAt: toTimestamp(rental.cancelledAt),
     smsSentAt: toTimestamp(rental.smsSentAt),
+    adminPickupAlertSentAt: toTimestamp(rental.adminPickupAlertSentAt),
     durationMinutes: rental.durationMinutes,
   };
 }

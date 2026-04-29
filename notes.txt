@@ -1,0 +1,20 @@
+Notes (04/29/26):
+    - When creating an item, make sure to upload the image first 
+      on public folder then input the actual path on the database.
+    - SMS messages currently sent:
+      Customer:
+      Activation:
+      Royal Farm: Your rental is now active. {items}. Please return each item on time.
+      Reminder:
+      Royal Farm: Reminder: {items} will end in 15 minutes. Please prepare to return it on time.
+      Return all:
+      Royal Farm: Your rental has been marked returned. Thank you.
+      Return item:
+      Royal Farm: {item name} has been marked returned. Thank you.
+      Fallback return item:
+      Royal Farm: Your rental item has been marked returned. Thank you.
+      Admin:
+      Pickup due:
+      Royal Farm Admin: Pickup due for {customer name}{ at cottage X if present}. {items} time is over. Please collect the item.
+      Verification:
+      Your Royal Farm verification code is {otp}. It expires in 10 minutes. Do not share this code.

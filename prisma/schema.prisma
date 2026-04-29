@@ -13,7 +13,6 @@ model RentalCatalogItem {
   damageFee  Int
   maxHours   Int      @default(1)
   maxQuantity Int     @default(1)
-  accent     String
   imageUrl   String
   isActive   Boolean  @default(true)
   sortOrder  Int      @default(0)
@@ -23,12 +22,19 @@ model RentalCatalogItem {
   @@index([isActive, sortOrder, name])
 }
 
+model AdminConfig {
+  id                 String   @id @default("default")
+  notificationMobile String   @default("")
+  updatedAt          DateTime @updatedAt
+}
+
 model Rental {
   id               String       @id
   floatId          String
   floatName        String
   price            Int
   customerName     String
+  cottageNumber    String   @default("")
   mobile           String
   verificationCode String
   paymentMode      String
@@ -39,6 +45,7 @@ model Rental {
   returnedAt       DateTime?
   cancelledAt      DateTime?
   smsSentAt        DateTime?
+  adminPickupAlertSentAt DateTime?
   durationMinutes  Int
   items            RentalItem[]
 

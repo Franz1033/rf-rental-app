@@ -1,0 +1,2 @@
+ALTER TABLE "Rental"
+ADD COLUMN "cottageNumber" TEXT NOT NULL DEFAULT '';

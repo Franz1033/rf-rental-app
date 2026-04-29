@@ -136,6 +136,7 @@ function RentalRecordCard({
         <>
           <dl className="mt-4 grid gap-2 sm:grid-cols-2">
             <DetailCard label="Mobile" value={rental.mobile} />
+            <DetailCard label="Cottage" value={rental.cottageNumber} />
             <DetailCard label="Payment" value={formatPaymentMode(rental)} />
             <DetailCard label="Activated" value={formatTime(rental.activatedAt)} />
             <DetailCard label="Returned" value={formatTime(rental.returnedAt)} />

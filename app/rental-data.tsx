@@ -11,7 +11,6 @@ export type FloatItem = {
   maxHours: number;
   maxQuantity: number;
   availableQuantity: number;
-  accent: string;
   imageUrl: string;
 };
 
@@ -41,6 +40,7 @@ export type RentalRecord = {
   price: number;
   items?: RentalLineItem[];
   customerName: string;
+  cottageNumber: string;
   mobile: string;
   verificationCode: string;
   paymentMode: PaymentMode;
@@ -51,6 +51,7 @@ export type RentalRecord = {
   returnedAt?: number;
   cancelledAt?: number;
   smsSentAt?: number;
+  adminPickupAlertSentAt?: number;
   durationMinutes: number;
 };
 
@@ -60,8 +61,10 @@ const rentalItemsStorageKey = "rf-rental-items";
 const emptyFloatItems: FloatItem[] = [];
 let rentalsCache: RentalRecord[] = emptyRentals;
 const rentalListeners = new Set<(rentals: RentalRecord[]) => void>();
+const serverClockListeners = new Set<(offsetMs: number) => void>();
 let rentalSaveInFlight = false;
 let latestRentalSaveRequestId = 0;
+let serverTimeOffsetMs = 0;
 
 export const rules = [
   "Rental time starts from cashier activation and follows the selected duration.",
@@ -255,6 +258,56 @@ const publishRentals = (nextRentals: RentalRecord[]) => {
   rentalListeners.forEach((listener) => listener(nextRentals));
 };
 
+const publishServerTimeOffset = (nextOffsetMs: number) => {
+  if (serverTimeOffsetMs === nextOffsetMs) {
+    return;
+  }
+
+  serverTimeOffsetMs = nextOffsetMs;
+  serverClockListeners.forEach((listener) => listener(nextOffsetMs));
+};
+
+const syncServerClock = (response: Response) => {
+  const rawServerTime =
+    response.headers.get("x-server-time") ?? response.headers.get("date");
+
+  if (!rawServerTime) {
+    return;
+  }
+
+  const parsedServerTime = /^\d+$/.test(rawServerTime)
+    ? Number(rawServerTime)
+    : Date.parse(rawServerTime);
+
+  if (!Number.isFinite(parsedServerTime)) {
+    return;
+  }
+
+  publishServerTimeOffset(parsedServerTime - Date.now());
+};
+
+export const getServerNow = () => Date.now() + serverTimeOffsetMs;
+
+export function useServerNow() {
+  const [now, setNow] = useState(() => getServerNow());
+
+  useEffect(() => {
+    const syncNow = () => setNow(getServerNow());
+
+    serverClockListeners.add(syncNow);
+    syncNow();
+
+    const interval = window.setInterval(syncNow, 1000);
+
+    return () => {
+      serverClockListeners.delete(syncNow);
+      window.clearInterval(interval);
+    };
+  }, []);
+
+  return now;
+}
+
 export function useRentals() {
   const [rentals, setRentals] = useState<RentalRecord[]>(rentalsCache);
 
@@ -283,6 +336,7 @@ export function useRentals() {
         throw new Error("Unable to load rentals.");
       }
 
+      syncServerClock(response);
       const nextRentals = (await response.json()) as RentalRecord[];
 
       if (rentalSaveInFlight) {
@@ -326,6 +380,7 @@ export function useRentals() {
             if (!response.ok) {
               throw new Error("Unable to save rentals.");
             }
+            syncServerClock(response);
             return response.json() as Promise<RentalRecord[]>;
           })
           .then((savedRentals) => {

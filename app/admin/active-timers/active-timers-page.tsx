@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
+  getServerNow,
   RentalLineItem,
   RentalRecord,
   formatAmountDue,
@@ -17,11 +18,15 @@ import {
   minutesLeft,
   secondsLeft,
   useRentals,
+  useServerNow,
 } from "@/app/rental-data";
 import {
+  claimAdminPickupLock,
   claimReminderLock,
   getDueReminderItems,
+  releaseAdminPickupLock,
   releaseReminderLock,
+  sendAdminPickupNotification,
   sendRentalNotification,
 } from "../rental-notifications";
 
@@ -62,18 +67,7 @@ function getTimerTone(totalSeconds: number) {
 export default function ActiveTimersPage() {
   const [rentals, updateRentals] = useRentals();
   const [selectedTimerId, setSelectedTimerId] = useState<string | null>(null);
-  const [now, setNow] = useState(0);
-
-  useEffect(() => {
-    const tick = () => {
-      setNow(Date.now());
-    };
-
-    tick();
-    const interval = window.setInterval(tick, 1000);
-
-    return () => window.clearInterval(interval);
-  }, []);
+  const now = useServerNow();
 
   useEffect(() => {
     if (!now) {
@@ -113,6 +107,45 @@ export default function ActiveTimersPage() {
       });
   }, [now, rentals, updateRentals]);
 
+  useEffect(() => {
+    if (!now) {
+      return;
+    }
+
+    rentals
+      .filter(
+        (rental) =>
+          rental.status === "active" &&
+          !rental.adminPickupAlertSentAt &&
+          getOpenRentalItems(rental).length > 0 &&
+          secondsLeft(rental, now) === 0,
+      )
+      .forEach((rental) => {
+        if (!claimAdminPickupLock(rental.id)) {
+          return;
+        }
+
+        const dueItems = getOpenRentalItems(rental);
+
+        if (dueItems.length === 0) {
+          releaseAdminPickupLock(rental.id);
+          return;
+        }
+
+        void sendAdminPickupNotification(rental, dueItems)
+          .then(() => {
+            updateRentals((current) =>
+              current.map((entry) =>
+                entry.id === rental.id && !entry.adminPickupAlertSentAt
+                  ? { ...entry, adminPickupAlertSentAt: now }
+                  : entry,
+              ),
+            );
+          })
+          .catch(() => {});
+      });
+  }, [now, rentals, updateRentals]);
+
   const activeRentals = rentals.filter(
     (rental) =>
       rental.status === "active" && getOpenRentalItems(rental).length > 0,
@@ -143,10 +176,10 @@ export default function ActiveTimersPage() {
               ...rental,
               items: getRentalItems(rental).map((item) => ({
                 ...item,
-                returnedAt: item.returnedAt ?? Date.now(),
+                returnedAt: item.returnedAt ?? getServerNow(),
               })),
               status: "returned",
-              returnedAt: Date.now(),
+              returnedAt: getServerNow(),
             }
           : rental,
       ),
@@ -163,7 +196,7 @@ export default function ActiveTimersPage() {
     itemId: string | undefined,
     itemIndex: number,
   ) => {
-    const timestamp = Date.now();
+    const timestamp = getServerNow();
     const rental = rentals.find((entry) => entry.id === rentalId);
     const rentalItem = rental
       ? getOpenRentalItems(rental).find((item, index) =>
@@ -231,7 +264,7 @@ export default function ActiveTimersPage() {
                     Math.min(100, (remainingSeconds / totalSeconds) * 100),
                   )
                 : 0;
-            const endTime = new Date(Date.now() + remainingSeconds * 1000);
+            const endTime = new Date(now + remainingSeconds * 1000);
             const formattedEndTime = endTime.toLocaleTimeString([], {
               hour: "numeric",
               minute: "2-digit",
@@ -421,6 +454,7 @@ function ActiveTimerModal({
 
         <dl className="mt-4 divide-y divide-slate-200 rounded-md border border-slate-200 bg-white px-4 text-sm">
           <DetailItem label="Customer" value={rental.customerName} />
+          <DetailItem label="Cottage" value={rental.cottageNumber} />
           <DetailItem label="Mobile" value={rental.mobile} />
           <DetailItem label="Payment" value={formatPaymentMode(rental)} />
           <DetailItem

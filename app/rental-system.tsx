@@ -35,7 +35,7 @@ type ToastState = {
 
 const freeRentalCooldownMs = 24 * 60 * 60 * 1000;
 const gcashEnabled = false;
-const smsVerificationEnabled = false;
+const smsVerificationEnabled = true;
 const getCurrentTimestamp = () => new Date().getTime();
 
 const clampCartValue = (value: number, max: number) =>
@@ -64,6 +64,7 @@ export default function RentalSystem() {
     "choose" | "rental" | "customer" | "rules" | "qr"
   >("choose");
   const [customerName, setCustomerName] = useState("");
+  const [cottageNumber, setCottageNumber] = useState("");
   const [mobile, setMobile] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
   const [hasSentVerificationCode, setHasSentVerificationCode] = useState(false);
@@ -78,10 +79,16 @@ export default function RentalSystem() {
     useState(false);
   const [rentals, , refreshRentals] = useRentals();
   const [currentRentalId, setCurrentRentalId] = useState<string | null>(null);
+  const [currentRentalSnapshot, setCurrentRentalSnapshot] =
+    useState<RentalRecord | null>(null);
 
   const currentRental = useMemo(
-    () => rentals.find((rental) => rental.id === currentRentalId) ?? null,
-    [currentRentalId, rentals],
+    () =>
+      rentals.find((rental) => rental.id === currentRentalId) ??
+      (currentRentalSnapshot?.id === currentRentalId
+        ? currentRentalSnapshot
+        : null),
+    [currentRentalId, currentRentalSnapshot, rentals],
   );
   const normalizedMobile = normalizePhilippineMobile(mobile);
   const hasFreeItem = cart.some((item) => item.price === 0);
@@ -235,6 +242,7 @@ export default function RentalSystem() {
   const resetCheckout = () => {
     setCart([]);
     setCustomerName("");
+    setCottageNumber("");
     setMobile("");
     setVerificationCode("");
     setHasSentVerificationCode(false);
@@ -245,6 +253,7 @@ export default function RentalSystem() {
     setIsSendingVerificationCode(false);
     setIsCheckingVerificationCode(false);
     setCurrentRentalId(null);
+    setCurrentRentalSnapshot(null);
     setStep("choose");
   };
 
@@ -252,6 +261,11 @@ export default function RentalSystem() {
     event.preventDefault();
 
     if (cart.length === 0) {
+      return;
+    }
+
+    if (!cottageNumber.trim()) {
+      setVerificationMessage("Enter the customer's cottage number.");
       return;
     }
 
@@ -380,6 +394,7 @@ export default function RentalSystem() {
       price: firstItem.price,
       items,
       customerName,
+      cottageNumber,
       mobile: normalizedMobile,
       verificationCode,
       paymentMode: payment,
@@ -396,6 +411,7 @@ export default function RentalSystem() {
       price: firstItem.price,
       items,
       customerName,
+      cottageNumber,
       mobile: normalizedMobile,
       verificationCode,
       paymentMode: payment,
@@ -425,8 +441,10 @@ export default function RentalSystem() {
       return;
     }
 
+    const savedRental = (await response.json()) as RentalRecord;
+    setCurrentRentalSnapshot(savedRental);
     await Promise.all([refreshRentals(), refreshItems()]);
-    setCurrentRentalId(id);
+    setCurrentRentalId(savedRental.id);
     setIsGeneratingQr(false);
     setStep("qr");
   };
@@ -796,6 +814,19 @@ export default function RentalSystem() {
                 />
               </label>
               <label className="block text-sm font-semibold">
+                Cottage number
+                <input
+                  className="mt-2 h-12 w-full rounded-md border border-slate-300 px-3 text-base outline-none focus:border-teal-600"
+                  onChange={(event) => {
+                    setCottageNumber(event.target.value);
+                    setVerificationMessage("");
+                  }}
+                  placeholder="Enter cottage number"
+                  required
+                  value={cottageNumber}
+                />
+              </label>
+              <label className="block text-sm font-semibold">
                 Mobile number
                 <input
                   className="mt-2 h-12 w-full rounded-md border border-slate-300 px-3 text-base outline-none focus:border-teal-600"
@@ -1003,6 +1034,10 @@ export default function RentalSystem() {
               <div className="flex justify-between gap-3">
                 <span>Customer</span>
                 <b>{currentRental.customerName}</b>
+              </div>
+              <div className="mt-2 flex justify-between gap-3">
+                <span>Cottage no.</span>
+                <b>{currentRental.cottageNumber}</b>
               </div>
               <div className="mt-2 flex justify-between gap-3">
                 <span>Items</span>

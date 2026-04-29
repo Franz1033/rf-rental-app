@@ -3,6 +3,7 @@
 import jsQR from "jsqr";
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import {
+  getServerNow,
   RentalLineItem,
   RentalRecord,
   StatusBadge,
@@ -15,12 +16,17 @@ import {
   isRentalFullyReturned,
   isRentalItemReturned,
   minutesLeft,
+  secondsLeft,
   useRentals,
+  useServerNow,
 } from "../rental-data";
 import {
+  claimAdminPickupLock,
   claimReminderLock,
   getDueReminderItems,
+  releaseAdminPickupLock,
   releaseReminderLock,
+  sendAdminPickupNotification,
   sendRentalNotification,
 } from "./rental-notifications";
 import { pendingRentalExpirationMs } from "@/app/lib/rental-config";
@@ -39,7 +45,7 @@ type BarcodeDetectorInstance = {
 
 export default function AdminRentalSystem() {
   const [rentals, updateRentals, refreshRentals] = useRentals();
-  const [now, setNow] = useState(0);
+  const now = useServerNow();
   const [scanCode, setScanCode] = useState("");
   const [scannerMessage, setScannerMessage] = useState("");
   const [isCameraOpen, setIsCameraOpen] = useState(false);
@@ -51,15 +57,6 @@ export default function AdminRentalSystem() {
   const streamRef = useRef<MediaStream | null>(null);
   const scanFrameRef = useRef<number | null>(null);
   const attemptedLookupRef = useRef("");
-
-  useEffect(() => {
-    const tick = () => setNow(Date.now());
-
-    tick();
-    const interval = window.setInterval(tick, 1000);
-
-    return () => window.clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     const timestamp = now;
@@ -93,6 +90,47 @@ export default function AdminRentalSystem() {
               current.map((entry) =>
                 entry.id === rental.id && !entry.smsSentAt
                   ? { ...entry, smsSentAt: timestamp }
+                  : entry,
+              ),
+            );
+          })
+          .catch(() => {});
+      });
+  }, [now, rentals, updateRentals]);
+
+  useEffect(() => {
+    const timestamp = now;
+
+    if (!timestamp) {
+      return;
+    }
+
+    rentals
+      .filter(
+        (rental) =>
+          rental.status === "active" &&
+          !rental.adminPickupAlertSentAt &&
+          getOpenRentalItems(rental).length > 0 &&
+          secondsLeft(rental, timestamp) === 0,
+      )
+      .forEach((rental) => {
+        if (!claimAdminPickupLock(rental.id)) {
+          return;
+        }
+
+        const dueItems = getOpenRentalItems(rental);
+
+        if (dueItems.length === 0) {
+          releaseAdminPickupLock(rental.id);
+          return;
+        }
+
+        void sendAdminPickupNotification(rental, dueItems)
+          .then(() => {
+            updateRentals((current) =>
+              current.map((entry) =>
+                entry.id === rental.id && !entry.adminPickupAlertSentAt
+                  ? { ...entry, adminPickupAlertSentAt: timestamp }
                   : entry,
               ),
             );
@@ -157,7 +195,7 @@ export default function AdminRentalSystem() {
     updateRentals((current) =>
       current.map((rental) =>
         rental.id === rentalId && rental.status === "pending"
-          ? { ...rental, status: "active", activatedAt: Date.now() }
+          ? { ...rental, status: "active", activatedAt: getServerNow() }
           : rental,
       ),
     );
@@ -176,10 +214,10 @@ export default function AdminRentalSystem() {
               ...rental,
               items: getRentalItems(rental).map((item) => ({
                 ...item,
-                returnedAt: item.returnedAt ?? Date.now(),
+                returnedAt: item.returnedAt ?? getServerNow(),
               })),
               status: "returned",
-              returnedAt: Date.now(),
+              returnedAt: getServerNow(),
             }
           : rental,
       ),
@@ -195,7 +233,7 @@ export default function AdminRentalSystem() {
     itemId: string | undefined,
     itemIndex: number,
   ) => {
-    const timestamp = Date.now();
+    const timestamp = getServerNow();
     const rental = rentals.find((entry) => entry.id === rentalId);
     const rentalItem = rental
       ? getOpenRentalItems(rental).find((item, index) =>
@@ -250,7 +288,7 @@ export default function AdminRentalSystem() {
     updateRentals((current) =>
       current.map((rental) =>
         rental.id === rentalId && rental.status === "pending"
-          ? { ...rental, status: "cancelled", cancelledAt: Date.now() }
+          ? { ...rental, status: "cancelled", cancelledAt: getServerNow() }
           : rental,
       ),
     );
@@ -774,6 +812,7 @@ function RentalVerificationCard({
       </div>
       <dl className="mt-3 divide-y divide-white/10 rounded-lg bg-slate-950/15">
         <CompactDetailRow label="Customer" value={rental.customerName} />
+        <CompactDetailRow label="Cottage" value={rental.cottageNumber} />
         <CompactDetailRow label="Mobile" value={rental.mobile} />
         <CompactDetailRow label="Payment" value={formatPaymentMode(rental)} />
         <CompactDetailRow
