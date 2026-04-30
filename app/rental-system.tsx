@@ -35,7 +35,7 @@ type ToastState = {
 
 const freeRentalCooldownMs = 24 * 60 * 60 * 1000;
 const gcashEnabled = false;
-const smsVerificationEnabled = true;
+const smsVerificationEnabled = false;
 const getCurrentTimestamp = () => new Date().getTime();
 
 const clampCartValue = (value: number, max: number) =>
@@ -945,8 +945,8 @@ export default function RentalSystem() {
 
               {hasFreeItem && (
                 <div className="rounded-md bg-[color:color-mix(in_srgb,var(--rf-blue)_18%,white)] p-3 text-sm font-semibold text-[var(--rf-ink)]">
-                  Free items are limited to 1 hour and 1 quantity per verified
-                  mobile number every 24 hours.
+                  Free items are limited to 1 hour and 1 quantity per mobile
+                  number every 24 hours.
                 </div>
               )}
 

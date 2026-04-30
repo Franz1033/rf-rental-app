@@ -888,7 +888,7 @@ function RentalVerificationCard({
   now: number;
 }) {
   return (
-    <div className="mt-4 rounded-md border border-slate-200 bg-white p-4 text-sm shadow-sm">
+    <div className="mt-4 rounded-md border border-[#d9e8dd] bg-[#f4f9f5] p-4 text-sm shadow-sm">
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="font-mono text-xl font-bold text-[var(--rf-ink)]">
@@ -942,7 +942,7 @@ function RentalVerificationCard({
       {rental.status === "pending" && (
         <div className="mt-3 grid gap-2">
           <button
-            className="h-11 w-full rounded-md border border-slate-200 bg-slate-50 px-4 font-bold text-red-600 transition hover:bg-red-50"
+            className="h-11 w-full rounded-md border border-red-200 bg-white px-4 font-bold text-red-600 transition hover:bg-red-50"
             onClick={() => onCancel(rental.id)}
             type="button"
           >
@@ -1048,7 +1048,7 @@ function ActiveReturnItemCard({
 function AdminStatusBadge({ status }: { status: RentalRecord["status"] }) {
   const styles = {
     pending: "border-[#d7e6db] bg-[#eef6f0] text-[#355540]",
-    active: "border-[#cde0d2] bg-[#e6f2e9] text-[#1f7a36]",
+    active: "border-[#1f7a36] bg-[#e6f2e9] text-[#1f7a36]",
     returned: "border-slate-200 bg-slate-100 text-slate-700",
     cancelled: "border-red-200 bg-red-50 text-red-600",
     expired: "border-amber-200 bg-amber-50 text-amber-700",
