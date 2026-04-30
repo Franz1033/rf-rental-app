@@ -35,7 +35,7 @@ type ToastState = {
 
 const freeRentalCooldownMs = 24 * 60 * 60 * 1000;
 const gcashEnabled = false;
-const smsVerificationEnabled = false;
+const smsVerificationEnabled = true;
 const getCurrentTimestamp = () => new Date().getTime();
 
 const clampCartValue = (value: number, max: number) =>
