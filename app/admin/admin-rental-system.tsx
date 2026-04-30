@@ -402,6 +402,27 @@ export default function AdminRentalSystem() {
     return scanVideoFrameWithJsQr(video);
   };
 
+  const waitForVideoElement = () =>
+    new Promise<HTMLVideoElement | null>((resolve) => {
+      const startedAt = Date.now();
+
+      const check = () => {
+        if (videoRef.current) {
+          resolve(videoRef.current);
+          return;
+        }
+
+        if (Date.now() - startedAt > 1500) {
+          resolve(null);
+          return;
+        }
+
+        requestAnimationFrame(check);
+      };
+
+      check();
+    });
+
   const startCameraScanner = async () => {
     const detector = getBarcodeDetector();
 
@@ -431,7 +452,7 @@ export default function AdminRentalSystem() {
           : "Point the camera at the rental QR code. Using Safari fallback scanner.",
       );
 
-      const video = videoRef.current;
+      const video = await waitForVideoElement();
 
       if (!video) {
         setScannerMessage("Camera preview element is missing.");
@@ -597,7 +618,7 @@ export default function AdminRentalSystem() {
                       <path d="M20 17a3 3 0 0 1-3 3h-2" />
                       <path d="M9 12h6" />
                     </svg>
-                    {isCameraOpen ? "Stop" : "Scan"}
+                  {isCameraOpen ? "Stop" : "Scan QR"}
                   </button>
                   <label className="flex h-12 cursor-pointer items-center justify-center gap-2 rounded-md border border-[#b9d8c3] bg-[#f4faf5] px-3 text-sm font-semibold text-[#1f7a36] transition hover:border-[#93c5a0] hover:bg-[#eef6f0]">
                     <svg
@@ -614,7 +635,7 @@ export default function AdminRentalSystem() {
                       <path d="M8 8l4-4 4 4" />
                       <path d="M5 20h14" />
                     </svg>
-                    Upload
+                  Upload QR
                     <input
                       accept="image/*"
                       className="sr-only"
