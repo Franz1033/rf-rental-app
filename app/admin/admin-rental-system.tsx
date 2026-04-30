@@ -618,7 +618,7 @@ export default function AdminRentalSystem() {
                       <path d="M20 17a3 3 0 0 1-3 3h-2" />
                       <path d="M9 12h6" />
                     </svg>
-                  {isCameraOpen ? "Stop" : "Scan QR"}
+                    {isCameraOpen ? "Stop" : "Scan QR"}
                   </button>
                   <label className="flex h-12 cursor-pointer items-center justify-center gap-2 rounded-md border border-[#b9d8c3] bg-[#f4faf5] px-3 text-sm font-semibold text-[#1f7a36] transition hover:border-[#93c5a0] hover:bg-[#eef6f0]">
                     <svg
@@ -635,7 +635,7 @@ export default function AdminRentalSystem() {
                       <path d="M8 8l4-4 4 4" />
                       <path d="M5 20h14" />
                     </svg>
-                  Upload QR
+                    Upload QR
                     <input
                       accept="image/*"
                       className="sr-only"
@@ -1045,11 +1045,7 @@ function ActiveReturnItemCard({
   );
 }
 
-function AdminStatusBadge({
-  status,
-}: {
-  status: RentalRecord["status"];
-}) {
+function AdminStatusBadge({ status }: { status: RentalRecord["status"] }) {
   const styles = {
     pending: "border-[#d7e6db] bg-[#eef6f0] text-[#355540]",
     active: "border-[#cde0d2] bg-[#e6f2e9] text-[#1f7a36]",
