@@ -449,7 +449,7 @@ export default function AdminRentalSystem() {
       setScannerMessage(
         detector
           ? "Point the camera at the rental QR code."
-          : "Point the camera at the rental QR code. Using Safari fallback scanner.",
+          : "Point the camera at the rental QR code.",
       );
 
       const video = await waitForVideoElement();
