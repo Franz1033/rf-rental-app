@@ -170,17 +170,15 @@ export default function TextCustomerPage() {
 
   return (
     <section className="space-y-5">
-      <header className="space-y-3 rounded-md bg-[linear-gradient(180deg,#ff7a45_0%,#ee4d2d_68%,#e64322_100%)] px-5 py-5 text-white">
-        <div>
-          <h1 className="text-3xl font-bold tracking-normal text-white sm:text-4xl">
-            Text Customer
-          </h1>
-          <p className="mt-2 max-w-3xl text-base leading-7 text-[#ffe7d6]">
-            Send a manual SMS to a customer. Pick one of the recent rentals,
-            choose a ready-made message, then edit it however you need before
-            sending.
-          </p>
-        </div>
+      <header className="space-y-2">
+        <h1 className="text-2xl font-semibold tracking-tight text-[var(--rf-ink)]">
+          Text Customer
+        </h1>
+        <p className="max-w-3xl text-sm leading-6 text-slate-600">
+          Send a manual SMS to a customer. Pick one of the recent rentals,
+          choose a ready-made message, then edit it however you need before
+          sending.
+        </p>
       </header>
 
       {messageableRentals.length === 0 ? (
@@ -195,7 +193,7 @@ export default function TextCustomerPage() {
             <label className="block text-sm font-semibold text-[var(--rf-ink)]">
               Customer rental
               <select
-                className="mt-2 h-12 w-full rounded-sm border border-[#dddddd] bg-white px-3 text-sm outline-none focus:border-[#ee4d2d]"
+                className="mt-2 h-12 w-full rounded-sm border border-[#dddddd] bg-white px-3 text-sm outline-none focus:border-[#1f7a36]"
                 onChange={(event) => {
                   setSelectedRentalId(event.target.value);
                   setHasEditedMobile(false);
@@ -247,7 +245,7 @@ export default function TextCustomerPage() {
               <label className="block text-sm font-semibold text-[var(--rf-ink)]">
                 Message type
                 <select
-                  className="mt-2 h-12 w-full rounded-sm border border-[#dddddd] bg-white px-3 text-sm outline-none focus:border-[#ee4d2d]"
+                  className="mt-2 h-12 w-full rounded-sm border border-[#dddddd] bg-white px-3 text-sm outline-none focus:border-[#1f7a36]"
                   onChange={(event) => {
                     setTemplate(event.target.value as TemplateKey);
                     setHasEditedMessage(false);
@@ -266,7 +264,7 @@ export default function TextCustomerPage() {
               <label className="block text-sm font-semibold text-[var(--rf-ink)]">
                 Customer mobile
                 <input
-                  className="mt-2 h-12 w-full rounded-sm border border-[#dddddd] px-3 text-base outline-none focus:border-[#ee4d2d]"
+                  className="mt-2 h-12 w-full rounded-sm border border-[#dddddd] px-3 text-base outline-none focus:border-[#1f7a36]"
                   disabled={isSending}
                   inputMode="tel"
                   onChange={(event) => {
@@ -281,7 +279,7 @@ export default function TextCustomerPage() {
               <label className="block text-sm font-semibold text-[var(--rf-ink)]">
                 Message
                 <textarea
-                  className="mt-2 min-h-44 w-full rounded-sm border border-[#dddddd] px-3 py-3 text-sm leading-6 outline-none focus:border-[#ee4d2d]"
+                  className="mt-2 min-h-44 w-full rounded-sm border border-[#dddddd] px-3 py-3 text-sm leading-6 outline-none focus:border-[#1f7a36]"
                   disabled={isSending}
                   onChange={(event) => {
                     setHasEditedMessage(true);
@@ -300,7 +298,7 @@ export default function TextCustomerPage() {
               {feedback && <p className="text-sm text-slate-600">{feedback}</p>}
 
               <button
-                className="h-11 rounded-sm bg-[#ee4d2d] px-4 text-sm font-bold text-white transition hover:bg-[#d84315] disabled:bg-slate-300"
+                className="h-11 rounded-sm bg-[#1f7a36] px-4 text-sm font-bold text-white transition hover:bg-[#17642b] disabled:bg-[#9fbea8]"
                 disabled={isSending || !selectedRental}
                 type="submit"
               >

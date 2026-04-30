@@ -1,5 +1,5 @@
-import ActiveTimersPage from "./active-timers-page";
+import { redirect } from "next/navigation";
 
 export default function AdminActiveTimersPage() {
-  return <ActiveTimersPage />;
+  redirect("/admin/active-rentals");
 }

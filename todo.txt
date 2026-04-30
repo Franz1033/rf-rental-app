@@ -13,11 +13,12 @@
 [X] - Add a new page on admin to check for damage fees
 [X] - Fix the bug wherein it say that not found when QR scan when there in fact is. I have to refresh the page first then it will be okay. 
 [ ] - Change favicon and logo
-[ ] - Change name
+[X] - Change name
 [ ] - General design/theme improvements
 [X] - Bug: When I delete something on checkout, page goes blank
 [X] - Page to text customer 
         - Can customize message and also have like you know the message they can choose from
 [ ] - Test the SMS for customer reminder and pickup due as well as admin
-[ ] - Change the disabled button colors to near orange instead of gray
+[X] - Change the disabled button colors to near orange instead of gray
 [ ] - Do a full feature test on customer and admin
+[X] - Test if pending transaction expiry actually works for 15mins

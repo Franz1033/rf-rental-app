@@ -66,7 +66,7 @@ export function AdminAuthForm() {
         {message && <p className="text-sm font-semibold text-rose-700">{message}</p>}
 
         <button
-          className="h-12 w-full rounded-md bg-[var(--rf-orange)] px-4 font-bold text-white transition hover:bg-[var(--rf-orange-deep)] disabled:bg-slate-300"
+          className="h-12 w-full rounded-md bg-[var(--rf-orange)] px-4 font-bold text-white transition hover:bg-[var(--rf-orange-deep)] disabled:bg-[#9fbea8]"
           disabled={isSubmitting}
           type="submit"
         >

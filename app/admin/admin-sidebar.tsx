@@ -5,13 +5,131 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const primaryLinks = [
-  { href: "/admin", label: "Home" },
-  { href: "/admin/active-timers", label: "Active Rentals" },
-  { href: "/admin/notifications", label: "Notifications" },
-  { href: "/admin/text-customer", label: "Text Customer" },
-  { href: "/admin/inventory", label: "Inventory" },
-  { href: "/admin/records", label: "Rental Records" },
+  { href: "/admin", label: "Home", icon: "home" },
+  { href: "/admin/active-rentals", label: "Active Rentals", icon: "clock" },
+  { href: "/admin/notifications", label: "Notifications", icon: "bell" },
+  { href: "/admin/text-customer", label: "Text Customer", icon: "message" },
+  { href: "/admin/inventory", label: "Inventory", icon: "boxes" },
+  { href: "/admin/records", label: "Rental Records", icon: "list" },
 ];
+
+function AdminBrand() {
+  return (
+    <div className="flex items-center gap-2">
+      <p className="text-base font-medium tracking-[0.02em] text-[#f7fff8] sm:text-lg">
+        Royal Farm Rentals
+      </p>
+      <span className="rounded-sm border border-white/20 bg-white/12 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-white/90">
+        Admin
+      </span>
+    </div>
+  );
+}
+
+function NavIcon({ icon }: { icon: (typeof primaryLinks)[number]["icon"] }) {
+  switch (icon) {
+    case "home":
+      return (
+        <svg
+          aria-hidden="true"
+          className="size-4"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+        >
+          <path d="M3 10.5 12 3l9 7.5" />
+          <path d="M5 9.5V21h14V9.5" />
+        </svg>
+      );
+    case "clock":
+      return (
+        <svg
+          aria-hidden="true"
+          className="size-4"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+        >
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 3" />
+        </svg>
+      );
+    case "bell":
+      return (
+        <svg
+          aria-hidden="true"
+          className="size-4"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+        >
+          <path d="M15 17H5l2-2v-4a5 5 0 1 1 10 0v4l2 2h-4" />
+          <path d="M9 17a3 3 0 0 0 6 0" />
+        </svg>
+      );
+    case "message":
+      return (
+        <svg
+          aria-hidden="true"
+          className="size-4"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+        >
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
+      );
+    case "boxes":
+      return (
+        <svg
+          aria-hidden="true"
+          className="size-4"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+        >
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+          <path d="m3.3 7 8.7 5 8.7-5" />
+          <path d="M12 22V12" />
+        </svg>
+      );
+    case "list":
+      return (
+        <svg
+          aria-hidden="true"
+          className="size-4"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+        >
+          <path d="M8 6h13" />
+          <path d="M8 12h13" />
+          <path d="M8 18h13" />
+          <path d="M3 6h.01" />
+          <path d="M3 12h.01" />
+          <path d="M3 18h.01" />
+        </svg>
+      );
+  }
+}
 
 export function AdminSidebar() {
   const pathname = usePathname();
@@ -52,9 +170,9 @@ export function AdminSidebar() {
 
   return (
     <>
-      <aside className="border-b border-[#de4325] bg-[linear-gradient(180deg,#ff7a45_0%,#ee4d2d_68%,#e64322_100%)] text-white lg:hidden">
+      <aside className="border-b border-[#17642b] bg-[linear-gradient(180deg,#3fa55b_0%,#2f8f49_62%,#1f7a36_100%)] text-white lg:hidden">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-4 sm:px-6">
-          <h2 className="text-lg font-bold">Royal Farm Admin</h2>
+          <AdminBrand />
           <button
             aria-controls="admin-mobile-drawer"
             aria-expanded={isOpen}
@@ -137,14 +255,17 @@ export function AdminSidebar() {
                   <Link
                     className={`flex items-center justify-between rounded-lg px-4 py-3 text-sm font-semibold transition ${
                       isActive
-                        ? "bg-[var(--rf-yellow)] text-[var(--rf-ink)] shadow-sm"
+                        ? "bg-[#17642b] text-white shadow-sm"
                         : "text-slate-700 hover:bg-[var(--rf-cream)]"
                     }`}
                     href={link.href}
                     key={link.href}
                     onClick={closeMenu}
                   >
-                    {link.label}
+                    <span className="flex items-center gap-3">
+                      <NavIcon icon={link.icon} />
+                      <span>{link.label}</span>
+                    </span>
                     <svg
                       aria-hidden="true"
                       className="size-4"
@@ -185,14 +306,13 @@ export function AdminSidebar() {
         </div>
       )}
 
-      <aside className="hidden border-b border-[#de4325] bg-[linear-gradient(180deg,#ff7a45_0%,#ee4d2d_68%,#e64322_100%)] text-white lg:block">
-        <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-6 px-6 py-4">
-          <div className="shrink-0">
-            <p className="text-lg font-bold text-white">Royal Farm Admin</p>
+      <aside className="hidden w-72 shrink-0 border-r border-[#17642b] bg-[linear-gradient(180deg,#3fa55b_0%,#2f8f49_62%,#1f7a36_100%)] text-white lg:flex lg:min-h-screen lg:flex-col">
+        <div className="sticky top-0 flex min-h-screen flex-col">
+          <div className="border-b border-white/15 px-6 py-6">
+            <AdminBrand />
           </div>
 
-          <div className="flex items-center gap-6">
-            <nav aria-label="Admin navigation" className="flex items-center gap-2">
+          <nav aria-label="Admin navigation" className="flex-1 space-y-2 px-4 py-5">
               {primaryLinks.map((link) => {
                 const isActive =
                   link.href === "/admin"
@@ -202,28 +322,30 @@ export function AdminSidebar() {
 
                 return (
                   <Link
-                    className={`rounded-md px-4 py-2 text-sm font-semibold transition ${
+                    className={`flex items-center gap-3 rounded-md px-4 py-3 text-sm font-semibold transition ${
                       isActive
-                        ? "bg-[var(--rf-yellow)] text-[var(--rf-ink)] shadow-sm"
+                        ? "bg-[#17642b] text-white shadow-sm"
                         : "text-white/80 hover:bg-white/15 hover:text-white"
                     }`}
                     href={link.href}
                     key={link.href}
                   >
-                    {link.label}
+                    <NavIcon icon={link.icon} />
+                    <span>{link.label}</span>
                   </Link>
                 );
               })}
-            </nav>
+          </nav>
 
+          <div className="border-t border-white/15 px-6 py-5">
             <Link
-              className="shrink-0 text-sm font-semibold text-white/75 hover:text-white"
+              className="block text-sm font-semibold text-white/75 transition hover:text-white"
               href="/"
             >
-              Customer
+              Open Customer Page
             </Link>
             <button
-              className="shrink-0 text-sm font-semibold text-[var(--rf-cream)] transition hover:text-white"
+              className="mt-3 block text-left text-sm font-semibold text-[var(--rf-cream)] transition hover:text-white"
               disabled={isLoggingOut}
               onClick={handleLogout}
               type="button"

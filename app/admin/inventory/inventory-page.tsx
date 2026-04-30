@@ -166,18 +166,18 @@ export default function InventoryPage() {
 
   return (
     <section className="space-y-5">
-      <header className="space-y-3 rounded-md bg-[linear-gradient(180deg,#ff7a45_0%,#ee4d2d_68%,#e64322_100%)] px-5 py-5 text-white shadow-sm">
+      <header className="space-y-2">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-normal text-white sm:text-4xl">
+          <div className="space-y-2">
+            <h1 className="text-2xl font-semibold tracking-tight text-[var(--rf-ink)]">
               Inventory
             </h1>
-            <p className="mt-2 text-base leading-7 text-[#ffe7d6]">
+            <p className="text-sm leading-6 text-slate-600">
               Manage the rental items shown to customers and staff.
             </p>
           </div>
           <button
-            className="h-11 rounded-sm bg-white px-4 text-sm font-bold text-[#ee4d2d] transition hover:bg-[#fff1eb]"
+            className="h-11 rounded-sm bg-[#1f7a36] px-4 text-sm font-bold text-white transition hover:bg-[#17642b]"
             onClick={openCreateModal}
             type="button"
           >
@@ -280,7 +280,7 @@ export default function InventoryPage() {
                       Edit
                     </button>
                     <button
-                      className="h-10 rounded-sm border border-[#ffcab8] text-sm font-semibold text-[#ee4d2d] transition hover:bg-[#fff5f1] disabled:opacity-50"
+                      className="h-10 rounded-sm border border-[#aacfb4] text-sm font-semibold text-[#1f7a36] transition hover:bg-[#eef6f0] disabled:opacity-50"
                       disabled={busyItemId === item.id}
                       onClick={() => void deleteItem(item)}
                       type="button"
@@ -447,7 +447,7 @@ function InventoryEditorModal({
 
           <div className="flex gap-3 md:col-span-2">
             <button
-              className="h-12 rounded-sm bg-[#ee4d2d] px-5 text-sm font-bold text-white transition hover:bg-[#d84315] disabled:bg-slate-300"
+              className="h-12 rounded-sm bg-[#1f7a36] px-5 text-sm font-bold text-white transition hover:bg-[#17642b] disabled:bg-[#9fbea8]"
               disabled={isSubmitting}
               type="submit"
             >
@@ -514,4 +514,4 @@ function SimpleRow({
 }
 
 const inputClassName =
-  "h-11 w-full rounded-sm border border-[#dddddd] bg-white px-3 text-sm outline-none focus:border-[#ee4d2d]";
+  "h-11 w-full rounded-sm border border-[#dddddd] bg-white px-3 text-sm outline-none focus:border-[#1f7a36]";

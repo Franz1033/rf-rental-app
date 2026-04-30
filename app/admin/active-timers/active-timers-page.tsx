@@ -40,26 +40,26 @@ type ActiveTimerEntry = {
 function getTimerTone(totalSeconds: number) {
   if (totalSeconds === 0) {
     return {
-      chipClass: "bg-[color:color-mix(in_srgb,var(--rf-orange)_18%,white)] text-[var(--rf-orange-deep)]",
-      labelClass: "text-[var(--rf-orange-deep)]",
-      progressClass: "bg-[var(--rf-orange)]",
+      chipClass: "border border-red-200 bg-red-50 text-red-600",
+      labelClass: "text-red-600",
+      progressClass: "bg-red-500",
       title: "Ended",
     };
   }
 
   if (totalSeconds <= 15 * 60) {
     return {
-      chipClass: "bg-[color:color-mix(in_srgb,var(--rf-yellow)_68%,white)] text-[var(--rf-ink)]",
-      labelClass: "text-[var(--rf-ink)]",
-      progressClass: "bg-[var(--rf-yellow)]",
+      chipClass: "border border-amber-200 bg-amber-100 text-amber-700",
+      labelClass: "text-amber-700",
+      progressClass: "bg-amber-400",
       title: "Due soon",
     };
   }
 
   return {
-    chipClass: "bg-[color:color-mix(in_srgb,var(--rf-blue)_25%,white)] text-[var(--rf-ink)]",
-    labelClass: "text-[var(--rf-ink)]",
-    progressClass: "bg-[var(--rf-blue)]",
+    chipClass: "border border-[#93c5a0] bg-[#e6f2e9] text-[#1f7a36]",
+    labelClass: "text-[#1f7a36]",
+    progressClass: "bg-[#2f8f49]",
     title: "Time left",
   };
 }
@@ -245,11 +245,13 @@ export default function ActiveTimersPage() {
 
   return (
     <section className="space-y-5">
-      <section className="rounded-xl border border-[var(--rf-blue)]/28 bg-white/92 p-4 shadow-[0_10px_24px_rgba(81,154,102,0.12)]">
-        <h2 className="text-lg font-bold text-[var(--rf-ink)]">Active Rentals</h2>
-        <div className="mt-3 grid gap-3 md:grid-cols-2">
+      <section>
+        <h1 className="text-2xl font-semibold tracking-tight text-[var(--rf-ink)]">
+          Active Rentals
+        </h1>
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
           {activeTimerEntries.length === 0 && (
-            <p className="rounded-lg bg-[color:color-mix(in_srgb,var(--rf-yellow)_42%,white)] p-3 text-sm text-[var(--rf-ink)]/75 md:col-span-2">
+            <p className="rounded-sm border border-[#d7e6db] bg-[#edf5ef] p-3 text-sm text-[#3f5946] md:col-span-2">
               No active rentals yet.
             </p>
           )}
@@ -272,7 +274,7 @@ export default function ActiveTimersPage() {
 
             return (
               <button
-                className="rounded-xl border border-[var(--rf-blue)]/22 bg-[color:color-mix(in_srgb,var(--rf-yellow)_22%,white)] p-3 text-left transition hover:border-[var(--rf-blue)]/42"
+                className="rounded-md border border-slate-200 bg-white p-3 text-left transition hover:border-[#b9d8c3] hover:bg-[#fbfdfb]"
                 key={key}
                 onClick={() => setSelectedTimerId(rental.id)}
                 type="button"
@@ -294,7 +296,7 @@ export default function ActiveTimersPage() {
                     totalSeconds={remainingSeconds}
                   />
                 </div>
-                <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/80">
+                <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200">
                   <div
                     className={`h-full rounded-full transition-all ${timerTone.progressClass}`}
                     style={{ width: `${progress}%` }}
@@ -391,13 +393,7 @@ function ActiveTimerModal({
   ) => void;
   rental: RentalRecord;
 }) {
-  const remainingSeconds = secondsLeft(rental, now);
-  const totalSeconds = rental.durationMinutes * 60;
-  const timerTone = getTimerTone(remainingSeconds);
-  const progress =
-    totalSeconds > 0
-      ? Math.max(0, Math.min(100, (remainingSeconds / totalSeconds) * 100))
-      : 0;
+  const [showDetails, setShowDetails] = useState(false);
 
   return (
     <div
@@ -417,7 +413,9 @@ function ActiveTimerModal({
             <h2 className="text-2xl font-bold" id="active-timer-title">
               {rental.id}
             </h2>
-            <p className="text-sm text-slate-600">{getRentalTitle(rental)}</p>
+            <p className="text-sm text-slate-600">
+              {rental.customerName} • {getRentalTitle(rental)}
+            </p>
           </div>
           <button
             className="rounded-md border border-slate-200 px-3 py-2 text-sm font-bold"
@@ -428,58 +426,55 @@ function ActiveTimerModal({
           </button>
         </div>
 
-        <div className="mt-4 rounded-md bg-slate-50 p-4">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <span className="text-xs font-bold uppercase tracking-wide text-slate-500">
-                Next item due
-              </span>
-              <p className="mt-1 text-sm text-slate-600">
-                {formatRentalDurationSummary(rental)}
-              </p>
-            </div>
-            <CountdownDisplay
-              label={timerTone.title}
-              labelClassName={timerTone.labelClass}
-              totalSeconds={remainingSeconds}
-              valueClassName={timerTone.chipClass}
-            />
-          </div>
-          <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-200">
-            <div
-              className={`h-full rounded-full transition-all ${timerTone.progressClass}`}
-              style={{ width: `${progress}%` }}
-            />
-          </div>
+        <div className="mt-4 rounded-md border border-slate-200 bg-white">
+          <button
+            aria-controls="active-rental-details"
+            aria-expanded={showDetails}
+            className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+            onClick={() => setShowDetails((current) => !current)}
+            type="button"
+          >
+            <p className="text-sm font-semibold text-[var(--rf-ink)]">
+              Rental details
+            </p>
+            <svg
+              aria-hidden="true"
+              className={`size-4 text-slate-500 transition ${showDetails ? "rotate-180" : ""}`}
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </button>
+          {showDetails && (
+            <dl
+              className="divide-y divide-slate-200 border-t border-slate-200 px-4 text-sm"
+              id="active-rental-details"
+            >
+              <DetailItem label="Customer" value={rental.customerName} />
+              <DetailItem label="Cottage" value={rental.cottageNumber} />
+              <DetailItem label="Mobile" value={rental.mobile} />
+              <DetailItem label="Payment" value={formatPaymentMode(rental)} />
+              <DetailItem
+                label="Amount"
+                value={formatAmountDue(rental.amountDue)}
+              />
+              <DetailItem
+                label="Durations"
+                value={formatRentalDurationSummary(rental)}
+              />
+              <DetailItem
+                label="Activated"
+                value={formatTime(rental.activatedAt)}
+              />
+              <DetailItem label="Created" value={formatTime(rental.createdAt)} />
+            </dl>
+          )}
         </div>
-
-        <dl className="mt-4 divide-y divide-slate-200 rounded-md border border-slate-200 bg-white px-4 text-sm">
-          <DetailItem label="Customer" value={rental.customerName} />
-          <DetailItem label="Cottage" value={rental.cottageNumber} />
-          <DetailItem label="Mobile" value={rental.mobile} />
-          <DetailItem label="Payment" value={formatPaymentMode(rental)} />
-          <DetailItem
-            label="Amount"
-            value={formatAmountDue(rental.amountDue)}
-          />
-          <DetailItem
-            label="Durations"
-            value={formatRentalDurationSummary(rental)}
-          />
-          <DetailItem
-            label="Activated"
-            value={formatTime(rental.activatedAt)}
-          />
-          <DetailItem label="Created" value={formatTime(rental.createdAt)} />
-          <DetailItem
-            label="SMS reminder"
-            value={
-              rental.smsSentAt
-                ? `Sent ${formatTime(rental.smsSentAt)}`
-                : "Waiting for 15-minute mark"
-            }
-          />
-        </dl>
 
         <div className="mt-4 rounded-md border border-slate-200 p-3">
           <h3 className="text-sm font-bold">Rented items</h3>
@@ -543,11 +538,8 @@ function ActiveTimerModal({
               );
             })}
           </div>
-        </div>
-
-        <div className="mt-4">
           <button
-            className="h-11 w-full rounded-md bg-[var(--rf-orange)] text-sm font-bold text-white transition hover:bg-[var(--rf-orange-deep)]"
+            className="mt-3 h-11 w-full rounded-md bg-[var(--rf-orange)] text-sm font-bold text-white transition hover:bg-[var(--rf-orange-deep)]"
             onClick={() => onReturn(rental.id)}
             type="button"
           >

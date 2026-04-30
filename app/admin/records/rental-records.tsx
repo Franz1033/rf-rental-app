@@ -27,16 +27,14 @@ export default function AdminRentalRecords() {
 
   return (
     <section className="space-y-5">
-      <header className="space-y-3 rounded-md bg-[linear-gradient(180deg,#ff7a45_0%,#ee4d2d_68%,#e64322_100%)] px-5 py-5 text-white">
-        <div>
-          <h1 className="text-3xl font-bold tracking-normal text-white sm:text-4xl">
-            Rental records
-          </h1>
-          <p className="mt-2 max-w-2xl text-base leading-7 text-[#ffe7d6]">
-            Review customer, payment, activation, return, and SMS reminder
-            details.
-          </p>
-        </div>
+      <header className="space-y-2">
+        <h1 className="text-2xl font-semibold tracking-tight text-[var(--rf-ink)]">
+          Rental records
+        </h1>
+        <p className="max-w-2xl text-sm leading-6 text-slate-600">
+          Review customer, payment, activation, return, and SMS reminder
+          details.
+        </p>
       </header>
 
       {rentals.length === 0 ? (
@@ -48,7 +46,7 @@ export default function AdminRentalRecords() {
         <div className="space-y-3">
           <select
             aria-label="Filter rental records by status"
-            className="h-11 w-full rounded-sm border border-[#dddddd] bg-white px-3 text-sm font-semibold outline-none focus:border-[#ee4d2d]"
+            className="h-11 w-full rounded-sm border border-[#dddddd] bg-white px-3 text-sm font-semibold outline-none focus:border-[#1f7a36]"
             onChange={(event) =>
               setStatusFilter(event.target.value as "all" | RentalStatus)
             }

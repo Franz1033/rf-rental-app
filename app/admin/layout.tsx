@@ -24,10 +24,12 @@ export default async function AdminLayout({
 
   return (
     <main className="min-h-screen bg-[#f5f5f5] text-[var(--rf-ink)]">
-      <section className="flex w-full flex-col py-0">
+      <section className="flex w-full flex-col py-0 lg:flex-row lg:items-stretch">
         <AdminSidebar />
-        <div className="mx-auto min-w-0 w-full max-w-7xl px-4 pt-4 pb-6 sm:px-6 sm:pt-5 sm:pb-8">
+        <div className="min-w-0 flex-1">
+          <div className="mx-auto w-full max-w-7xl px-4 pt-4 pb-6 sm:px-6 sm:pt-5 sm:pb-8 lg:px-8 lg:pt-8 lg:pb-10">
           {children}
+          </div>
         </div>
       </section>
     </main>

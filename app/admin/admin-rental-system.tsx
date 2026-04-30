@@ -6,7 +6,6 @@ import {
   getServerNow,
   RentalLineItem,
   RentalRecord,
-  StatusBadge,
   formatAmountDue,
   formatCountdown,
   formatRentalDuration,
@@ -174,7 +173,6 @@ export default function AdminRentalSystem() {
   useEffect(() => {
     if (!lookupCode) {
       attemptedLookupRef.current = "";
-      setIsResolvingLookup(false);
       return;
     }
 
@@ -317,6 +315,7 @@ export default function AdminRentalSystem() {
     }
 
     setScanCode(code);
+    setIsResolvingLookup(false);
     setScannerMessage(`Scanned ${code}. Verify the details before activating.`);
     return true;
   };
@@ -498,220 +497,289 @@ export default function AdminRentalSystem() {
 
   return (
     <section className="space-y-5">
-      <div className="mx-auto grid max-w-5xl items-start gap-6 lg:grid-cols-2">
-        <section className="min-w-0 w-full max-w-full overflow-hidden rounded-lg border border-[var(--rf-ink)]/35 bg-[var(--rf-ink)] p-4 text-white box-border">
-          <h2 className="text-2xl font-bold">Retrieve rental</h2>
-          <p className="mt-2 text-sm text-white/65">
-            Scan, upload, or enter the rental code.
-          </p>
-          <div className="relative mt-4">
-            <input
-              className="h-12 w-full rounded-md border border-white/20 bg-white px-3 pr-12 text-base font-bold text-slate-950 outline-none"
-              onChange={(event) =>
-                setScanCode(event.target.value.toUpperCase())
-              }
-              aria-label="Rental code"
-              autoComplete="off"
-              placeholder="Enter rental code..."
-              spellCheck={false}
-              value={scanCode}
-            />
-            {scanCode && (
-              <button
-                aria-label="Clear rental code"
-                className="absolute right-2 top-1/2 inline-flex size-8 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-                onClick={() => {
-                  setScanCode("");
-                  setScannerMessage("");
-                }}
-                type="button"
-              >
-                <svg
-                  aria-hidden="true"
-                  className="size-4"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M6 6l12 12" />
-                  <path d="M18 6L6 18" />
-                </svg>
-              </button>
-            )}
-          </div>
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            <button
-              className={`flex h-11 items-center justify-center gap-2 rounded-md px-3 text-sm font-bold transition ${
-                isCameraOpen
-                  ? "bg-[var(--rf-yellow)] text-[var(--rf-ink)]"
-                  : "bg-white text-[var(--rf-ink)] hover:bg-[var(--rf-yellow)]/90"
-              }`}
-              onClick={isCameraOpen ? stopCameraScanner : startCameraScanner}
-              type="button"
-            >
-              <svg
-                aria-hidden="true"
-                className="size-4"
-                fill="none"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-              >
-                <path d="M4 7a3 3 0 0 1 3-3h2" />
-                <path d="M20 7a3 3 0 0 0-3-3h-2" />
-                <path d="M4 17a3 3 0 0 0 3 3h2" />
-                <path d="M20 17a3 3 0 0 1-3 3h-2" />
-                <path d="M9 12h6" />
-              </svg>
-              {isCameraOpen ? "Stop scan" : "Scan QR"}
-            </button>
-            <label className="flex h-11 cursor-pointer items-center justify-center gap-2 rounded-md border border-white/20 px-3 text-sm font-bold text-white transition hover:bg-white/5">
-              <svg
-                aria-hidden="true"
-                className="size-4"
-                fill="none"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-              >
-                <path d="M12 16V4" />
-                <path d="M8 8l4-4 4 4" />
-                <path d="M5 20h14" />
-              </svg>
-              Upload QR
-              <input
-                accept="image/*"
-                className="sr-only"
-                onChange={scanUploadedQr}
-                type="file"
-              />
-            </label>
-          </div>
-          <video
-            autoPlay
-            muted
-            playsInline
-            ref={videoRef}
-            className={`mt-3 aspect-video w-full rounded-md bg-black object-cover ${
-              isCameraOpen ? "block" : "hidden"
-            }`}
-          />
-          {scannerMessage && (
-            <p className="mt-3 rounded-md bg-white/10 p-3 text-sm text-white/75">
-              {scannerMessage}
-            </p>
-          )}
-          {scannedRental ? (
-            <RentalVerificationCard
-              now={now}
-              rental={scannedRental}
-              onActivate={activateRental}
-              onCancel={cancelRental}
-              onReturn={returnRental}
-              onReturnItem={returnRentalItem}
-            />
-          ) : lookupCode && isResolvingLookup ? (
-            <p className="mt-3 rounded-md bg-white/10 p-3 text-sm text-white/75">
-              Looking up rental {lookupCode}...
-            </p>
-          ) : lookupCode ? (
-            <p className="mt-3 rounded-md bg-[var(--rf-orange)]/20 p-3 text-sm text-[var(--rf-yellow)]">
-              No rental found for {lookupCode}. Ask the customer to present the
-              latest QR pass.
-            </p>
-          ) : null}
-        </section>
+      <div className="mx-auto max-w-6xl">
+        <h1 className="mb-4 text-2xl font-semibold tracking-tight text-[var(--rf-ink)]">
+          Home
+        </h1>
+        <div className="grid items-start gap-4 xl:grid-cols-2">
+          <section className="min-w-0 w-full max-w-full rounded-md border border-slate-200 bg-white shadow-sm box-border">
+            <div className="rounded-t-md border-b border-slate-200 bg-[linear-gradient(180deg,#f7fbf8_0%,#eef6f0_100%)] px-5 py-4">
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-xl font-medium text-[var(--rf-ink)]">
+                  Retrieve Rental
+                </h2>
+                <span className="inline-flex size-9 items-center justify-center rounded-md border border-[#1f7a36] bg-[#1f7a36] text-white">
+                  <svg
+                    aria-hidden="true"
+                    className="size-4 shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M21 21l-4.35-4.35" />
+                    <circle cx="11" cy="11" r="6" />
+                  </svg>
+                </span>
+              </div>
+            </div>
 
-        <section className="w-full max-w-full overflow-hidden rounded-xl border border-[var(--rf-blue)]/30 bg-white/92 p-4 shadow-[0_10px_24px_rgba(81,154,102,0.12)] box-border lg:self-start">
-          <h2 className="text-lg font-bold text-[var(--rf-ink)]">Pending rentals</h2>
-          <div className="mt-3 space-y-3">
-            {pendingRentals.length === 0 && (
-              <p className="rounded-lg bg-[color:color-mix(in_srgb,var(--rf-yellow)_42%,white)] p-3 text-sm text-[var(--rf-ink)]/75">
-                No pending rentals.
-              </p>
-            )}
-            {pendingRentals.map((rental) => (
-              <div
-                className="rounded-xl border border-[var(--rf-blue)]/22 bg-[color:color-mix(in_srgb,var(--rf-yellow)_22%,white)] p-3 text-sm"
-                key={rental.id}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <b className="block">{rental.id}</b>
-                    <span className="mt-1 block text-[var(--rf-ink)]/72">
-                      {rental.customerName}
-                    </span>
-                    <span className="mt-2 inline-flex items-center rounded-full bg-[var(--rf-yellow)] px-2.5 py-1 text-xs font-bold text-[var(--rf-ink)]">
-                      Expires in {formatPendingCountdown(rental, now)}
-                    </span>
-                  </div>
-                  <div className="relative shrink-0">
+            <div className="p-5">
+              <div className="space-y-3">
+                <div className="relative min-w-0">
+                  <input
+                    className="h-12 w-full rounded-md border border-slate-300 bg-white px-4 pr-12 text-base font-semibold text-slate-950 outline-none transition focus:border-[var(--rf-blue)]"
+                    onChange={(event) => {
+                      setScanCode(event.target.value.toUpperCase());
+                      setIsResolvingLookup(false);
+                    }}
+                    aria-label="Rental code"
+                    autoComplete="off"
+                    placeholder="Enter rental code"
+                    spellCheck={false}
+                    value={scanCode}
+                  />
+                  {scanCode && (
                     <button
-                      aria-expanded={openPendingMenuId === rental.id}
-                      aria-haspopup="menu"
-                      aria-label={`More actions for ${rental.id}`}
-                      className="inline-flex size-9 items-center justify-center rounded-md border border-[var(--rf-blue)]/25 text-[var(--rf-ink)]/55 transition hover:bg-white hover:text-[var(--rf-ink)]"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        setOpenPendingMenuId((current) =>
-                          current === rental.id ? null : rental.id,
-                        );
+                      aria-label="Clear rental code"
+                      className="absolute right-2 top-1/2 inline-flex size-8 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                      onClick={() => {
+                        setScanCode("");
+                        setIsResolvingLookup(false);
+                        setScannerMessage("");
                       }}
                       type="button"
                     >
                       <svg
                         aria-hidden="true"
                         className="size-4"
-                        fill="currentColor"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
                         viewBox="0 0 24 24"
                       >
-                        <circle cx="5" cy="12" r="1.75" />
-                        <circle cx="12" cy="12" r="1.75" />
-                        <circle cx="19" cy="12" r="1.75" />
+                        <path d="M6 6l12 12" />
+                        <path d="M18 6L6 18" />
                       </svg>
                     </button>
-                    {openPendingMenuId === rental.id && (
-                      <div
-                        className="absolute right-0 top-10 z-10 rounded-md border border-[var(--rf-blue)]/24 bg-white p-1 shadow-lg"
-                        onClick={(event) => event.stopPropagation()}
-                        role="menu"
-                      >
-                        <button
-                          className="flex items-center whitespace-nowrap rounded px-3 py-2 text-left text-sm font-semibold text-[var(--rf-orange-deep)] transition hover:bg-[color:color-mix(in_srgb,var(--rf-orange)_14%,white)]"
-                          onClick={() => {
-                            setOpenPendingMenuId(null);
-                            cancelRental(rental.id);
-                          }}
-                          role="menuitem"
-                          type="button"
-                        >
-                          Cancel rental
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                  )}
                 </div>
-                <button
-                  className="mt-3 h-10 w-full rounded-md border border-[var(--rf-blue)]/24 bg-white text-xs font-bold text-[var(--rf-ink)]"
+
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    className={`flex h-12 items-center justify-center gap-2 rounded-md border px-3 text-sm font-semibold transition ${
+                      isCameraOpen
+                        ? "border-[#17642b] bg-[linear-gradient(180deg,#3fa55b_0%,#2f8f49_62%,#1f7a36_100%)] text-white shadow-sm"
+                        : "border-[#1f7a36] bg-[#1f7a36] text-white hover:bg-[#17642b] hover:border-[#17642b]"
+                    }`}
+                    onClick={
+                      isCameraOpen ? stopCameraScanner : startCameraScanner
+                    }
+                    type="button"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      className="size-4"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M4 7a3 3 0 0 1 3-3h2" />
+                      <path d="M20 7a3 3 0 0 0-3-3h-2" />
+                      <path d="M4 17a3 3 0 0 0 3 3h2" />
+                      <path d="M20 17a3 3 0 0 1-3 3h-2" />
+                      <path d="M9 12h6" />
+                    </svg>
+                    {isCameraOpen ? "Stop" : "Scan"}
+                  </button>
+                  <label className="flex h-12 cursor-pointer items-center justify-center gap-2 rounded-md border border-[#b9d8c3] bg-[#f4faf5] px-3 text-sm font-semibold text-[#1f7a36] transition hover:border-[#93c5a0] hover:bg-[#eef6f0]">
+                    <svg
+                      aria-hidden="true"
+                      className="size-4"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M12 16V4" />
+                      <path d="M8 8l4-4 4 4" />
+                      <path d="M5 20h14" />
+                    </svg>
+                    Upload
+                    <input
+                      accept="image/*"
+                      className="sr-only"
+                      onChange={scanUploadedQr}
+                      type="file"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              {isCameraOpen && (
+                <div className="mt-4 rounded-md border border-slate-200 bg-slate-50 p-3">
+                  <video
+                    autoPlay
+                    muted
+                    playsInline
+                    ref={videoRef}
+                    className="aspect-video w-full rounded-md bg-black object-cover"
+                  />
+                </div>
+              )}
+
+              {(scannerMessage || scannedRental || lookupCode) && (
+                <div className="mt-4 space-y-3">
+                  {scannerMessage && (
+                    <p className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">
+                      {scannerMessage}
+                    </p>
+                  )}
+                  {scannedRental ? (
+                    <RentalVerificationCard
+                      now={now}
+                      rental={scannedRental}
+                      onActivate={activateRental}
+                      onCancel={cancelRental}
+                      onReturn={returnRental}
+                      onReturnItem={returnRentalItem}
+                    />
+                  ) : lookupCode && isResolvingLookup ? (
+                    <p className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">
+                      Looking up rental {lookupCode}...
+                    </p>
+                  ) : lookupCode ? (
+                    <p className="rounded-md border border-[#d9e8dd] bg-[#f4f9f5] p-3 text-sm text-[#45624d]">
+                      No rental found for {lookupCode}.
+                    </p>
+                  ) : null}
+                </div>
+              )}
+            </div>
+          </section>
+
+          <section className="w-full max-w-full overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm box-border lg:self-start">
+            <div className="rounded-t-md border-b border-slate-200 bg-[linear-gradient(180deg,#f7fbf8_0%,#eef6f0_100%)] px-5 py-4">
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-xl font-medium text-[var(--rf-ink)]">
+                  Pending Rentals
+                </h2>
+                <span className="inline-flex size-9 items-center justify-center rounded-md border border-[#1f7a36] bg-[#1f7a36] text-white">
+                  <svg
+                    aria-hidden="true"
+                    className="size-4 shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M12 6v6l4 2" />
+                    <circle cx="12" cy="12" r="9" />
+                  </svg>
+                </span>
+              </div>
+            </div>
+
+            <div className="space-y-2 p-4">
+              {pendingRentals.length === 0 && (
+                <p className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">
+                  No pending rentals.
+                </p>
+              )}
+              {pendingRentals.map((rental) => (
+                <div
+                  className="cursor-pointer rounded-md border border-slate-200 bg-white p-3 text-sm transition hover:border-[#b9d8c3] hover:bg-[#fbfdfb]"
+                  key={rental.id}
                   onClick={() => {
                     setScanCode(rental.id);
+                    setIsResolvingLookup(false);
                     setScannerMessage("");
+                    setOpenPendingMenuId(null);
                   }}
-                  type="button"
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      setScanCode(rental.id);
+                      setIsResolvingLookup(false);
+                      setScannerMessage("");
+                      setOpenPendingMenuId(null);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
                 >
-                  View details
-                </button>
-              </div>
-            ))}
-          </div>
-        </section>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <b className="block text-[var(--rf-ink)]">{rental.id}</b>
+                      <span className="mt-1 block text-[var(--rf-ink)]/72">
+                        {rental.customerName}
+                      </span>
+                      <span className="mt-2 inline-flex items-center rounded-md bg-[#eef6f0] px-2.5 py-1 text-xs font-bold text-[#355540]">
+                        Expires in {formatPendingCountdown(rental, now)}
+                      </span>
+                    </div>
+                    <div className="relative shrink-0">
+                      <button
+                        aria-expanded={openPendingMenuId === rental.id}
+                        aria-haspopup="menu"
+                        aria-label={`More actions for ${rental.id}`}
+                        className="inline-flex size-9 items-center justify-center rounded-md border border-slate-200 text-[var(--rf-ink)]/55 transition hover:bg-slate-50 hover:text-[var(--rf-ink)]"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setOpenPendingMenuId((current) =>
+                            current === rental.id ? null : rental.id,
+                          );
+                        }}
+                        type="button"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          className="size-4"
+                          fill="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle cx="5" cy="12" r="1.75" />
+                          <circle cx="12" cy="12" r="1.75" />
+                          <circle cx="19" cy="12" r="1.75" />
+                        </svg>
+                      </button>
+                      {openPendingMenuId === rental.id && (
+                        <div
+                          className="absolute right-0 top-10 z-10 rounded-md border border-slate-200 bg-white p-1 shadow-lg"
+                          onClick={(event) => event.stopPropagation()}
+                          role="menu"
+                        >
+                          <button
+                            className="flex items-center whitespace-nowrap rounded px-3 py-2 text-left text-sm font-semibold text-red-600 transition hover:bg-red-50"
+                            onClick={() => {
+                              setOpenPendingMenuId(null);
+                              cancelRental(rental.id);
+                            }}
+                            role="menuitem"
+                            type="button"
+                          >
+                            Cancel rental
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
       </div>
     </section>
   );
@@ -799,18 +867,16 @@ function RentalVerificationCard({
   now: number;
 }) {
   return (
-    <div className="mt-4 rounded-lg border border-white/10 bg-white/10 p-3 text-sm">
-      <div className="rounded-lg bg-white/10 p-3">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <p className="font-mono text-xl font-bold text-white">
-              {rental.id}
-            </p>
-          </div>
-          <StatusBadge status={rental.status} />
+    <div className="mt-4 rounded-md border border-slate-200 bg-white p-4 text-sm shadow-sm">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="font-mono text-xl font-bold text-[var(--rf-ink)]">
+            {rental.id}
+          </p>
         </div>
+        <AdminStatusBadge status={rental.status} />
       </div>
-      <dl className="mt-3 divide-y divide-white/10 rounded-lg bg-white/7">
+      <dl className="mt-3 divide-y divide-slate-200 rounded-md border border-slate-200 bg-white">
         <CompactDetailRow label="Customer" value={rental.customerName} />
         <CompactDetailRow label="Cottage" value={rental.cottageNumber} />
         <CompactDetailRow label="Mobile" value={rental.mobile} />
@@ -831,19 +897,19 @@ function RentalVerificationCard({
         )}
       </dl>
       {rental.status !== "active" && (
-        <div className="mt-3 rounded-lg bg-white/7 p-3">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/45">
+        <div className="mt-3">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
             Rented items
           </p>
           <div className="mt-2 space-y-2">
             {getRentalItems(rental).map((item, index) => (
               <div
-                className="rounded-md bg-white/5 px-3 py-2.5"
+                className="rounded-md border border-slate-200 bg-white px-3 py-2.5"
                 key={item.id ?? `${item.floatId}-${index}`}
               >
                 <div className="flex items-start justify-between gap-3">
-                  <b className="text-white">{item.floatName}</b>
-                  <span className="shrink-0 text-sm font-semibold text-white/75">
+                  <b className="text-[var(--rf-ink)]">{item.floatName}</b>
+                  <span className="shrink-0 text-sm font-semibold text-slate-500">
                     {formatRentalDuration(item.durationMinutes)}
                   </span>
                 </div>
@@ -855,23 +921,26 @@ function RentalVerificationCard({
       {rental.status === "pending" && (
         <div className="mt-3 grid gap-2">
           <button
-            className="h-11 w-full rounded-md bg-[var(--rf-yellow)] px-4 font-bold text-[var(--rf-ink)]"
-            onClick={() => onActivate(rental.id)}
-            type="button"
-          >
-            Activate
-          </button>
-          <button
-            className="h-11 w-full rounded-md bg-[var(--rf-orange)] px-4 font-bold text-white hover:bg-[var(--rf-orange-deep)]"
+            className="h-11 w-full rounded-md border border-slate-200 bg-slate-50 px-4 font-bold text-red-600 transition hover:bg-red-50"
             onClick={() => onCancel(rental.id)}
             type="button"
           >
             Cancel rental
           </button>
+          <button
+            className="h-11 w-full rounded-md bg-[#1f7a36] px-4 font-bold text-white transition hover:bg-[#17642b]"
+            onClick={() => onActivate(rental.id)}
+            type="button"
+          >
+            Activate
+          </button>
         </div>
       )}
       {rental.status === "active" && (
         <div className="mt-3 space-y-2">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+            Rented items
+          </p>
           {getRentalItems(rental).map((item, index) => (
             <ActiveReturnItemCard
               item={item}
@@ -883,7 +952,7 @@ function RentalVerificationCard({
           ))}
           {getOpenRentalItems(rental).length > 1 && (
             <button
-              className="h-11 w-full rounded-md bg-[var(--rf-blue)] px-4 font-bold text-[var(--rf-ink)]"
+              className="h-11 w-full rounded-md bg-[#1f7a36] px-4 font-bold text-white transition hover:bg-[#17642b]"
               onClick={() => onReturn(rental.id)}
               type="button"
             >
@@ -893,17 +962,17 @@ function RentalVerificationCard({
         </div>
       )}
       {rental.status === "returned" && (
-        <p className="mt-3 rounded-md bg-white/10 p-3 text-white/75">
+        <p className="mt-3 rounded-md border border-slate-200 bg-slate-50 p-3 text-slate-600">
           This rental has already been closed.
         </p>
       )}
       {rental.status === "cancelled" && (
-        <p className="mt-3 rounded-md bg-white/10 p-3 text-white/75">
+        <p className="mt-3 rounded-md border border-slate-200 bg-slate-50 p-3 text-slate-600">
           This pending rental was cancelled and cannot be activated.
         </p>
       )}
       {rental.status === "expired" && (
-        <p className="mt-3 rounded-md bg-white/10 p-3 text-white/75">
+        <p className="mt-3 rounded-md border border-slate-200 bg-slate-50 p-3 text-slate-600">
           This pending rental expired and can no longer be activated.
         </p>
       )}
@@ -927,11 +996,11 @@ function ActiveReturnItemCard({
   rental: RentalRecord;
 }) {
   return (
-    <div className="rounded-md bg-white/10 p-3">
+    <div className="rounded-md border border-slate-200 bg-white p-3">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <b className="text-white">{item.floatName}</b>
-          <p className="mt-1 text-white/75">
+          <b className="text-[var(--rf-ink)]">{item.floatName}</b>
+          <p className="mt-1 text-slate-600">
             {formatRentalDuration(item.durationMinutes)} ·{" "}
             {formatAmountDue(item.subtotal)}
           </p>
@@ -943,7 +1012,7 @@ function ActiveReturnItemCard({
         </div>
         {!isRentalItemReturned(item) && (
           <button
-            className="rounded-md border border-[var(--rf-blue)]/45 bg-[var(--rf-blue)] px-3 py-2 text-xs font-bold text-[var(--rf-ink)]"
+            className="rounded-md border border-[#1f7a36] bg-[#1f7a36] px-3 py-2 text-xs font-bold text-white transition hover:bg-[#17642b] hover:border-[#17642b]"
             onClick={() => onReturnItem(rental.id, item.id, itemIndex)}
             type="button"
           >
@@ -955,13 +1024,35 @@ function ActiveReturnItemCard({
   );
 }
 
+function AdminStatusBadge({
+  status,
+}: {
+  status: RentalRecord["status"];
+}) {
+  const styles = {
+    pending: "border-[#d7e6db] bg-[#eef6f0] text-[#355540]",
+    active: "border-[#cde0d2] bg-[#e6f2e9] text-[#1f7a36]",
+    returned: "border-slate-200 bg-slate-100 text-slate-700",
+    cancelled: "border-red-200 bg-red-50 text-red-600",
+    expired: "border-amber-200 bg-amber-50 text-amber-700",
+  };
+
+  return (
+    <span
+      className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wide ${styles[status]}`}
+    >
+      {status}
+    </span>
+  );
+}
+
 function CompactDetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="grid grid-cols-[104px_minmax(0,1fr)] items-center gap-3 px-3 py-2.5">
-      <dt className="leading-none text-[10px] font-semibold uppercase tracking-[0.14em] text-white/45">
+      <dt className="leading-none text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
         {label}
       </dt>
-      <dd className="min-w-0 text-right font-semibold leading-none text-white">
+      <dd className="min-w-0 text-right font-semibold leading-none text-[var(--rf-ink)]">
         {value}
       </dd>
     </div>
