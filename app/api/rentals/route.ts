@@ -91,7 +91,9 @@ export async function POST(request: Request) {
     await expireStalePendingRentals(client);
     await client.query("BEGIN");
 
-    const rental = expirePendingRentalRecord((await request.json()) as RentalRecord);
+    const rental = expirePendingRentalRecord(
+      normalizeIncomingRentalForCreate((await request.json()) as RentalRecord),
+    );
     const cooldownMessage = await getFreeCooldownMessage(client, rental);
 
     if (cooldownMessage) {
@@ -303,6 +305,13 @@ function expirePendingRentalRecord(rental: RentalRecord): RentalRecord {
     ...rental,
     cancelledAt: rental.cancelledAt ?? rental.createdAt + pendingRentalExpirationMs,
     status: "expired",
+  };
+}
+
+function normalizeIncomingRentalForCreate(rental: RentalRecord): RentalRecord {
+  return {
+    ...rental,
+    createdAt: Date.now(),
   };
 }
 

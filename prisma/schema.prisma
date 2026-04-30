@@ -28,6 +28,18 @@ model AdminConfig {
   updatedAt          DateTime @updatedAt
 }
 
+model AdminTextMessage {
+  id           String   @id @default(cuid())
+  rentalId     String?
+  customerName String   @default("")
+  mobile       String
+  message      String
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([rentalId, createdAt])
+}
+
 model Rental {
   id               String       @id
   floatId          String

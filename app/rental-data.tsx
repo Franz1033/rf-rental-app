@@ -11,6 +11,7 @@ export type FloatItem = {
   maxHours: number;
   maxQuantity: number;
   availableQuantity: number;
+  pendingQuantity: number;
   imageUrl: string;
 };
 
@@ -242,6 +243,8 @@ const normalizeFloatItems = (items: FloatItem[]) =>
       typeof item.availableQuantity === "number"
         ? item.availableQuantity
         : item.maxQuantity,
+    pendingQuantity:
+      typeof item.pendingQuantity === "number" ? item.pendingQuantity : 0,
   }));
 
 const publishRentals = (nextRentals: RentalRecord[]) => {
@@ -529,11 +532,11 @@ export function QrPass({ rental }: { rental: RentalRecord }) {
 
 export function StatusBadge({ status }: { status: RentalStatus }) {
   const styles = {
-    pending: "bg-amber-100 text-amber-800",
-    active: "bg-emerald-100 text-emerald-800",
-    returned: "bg-slate-200 text-slate-700",
-    cancelled: "bg-rose-100 text-rose-800",
-    expired: "bg-orange-100 text-orange-800",
+    pending: "bg-[color:color-mix(in_srgb,var(--rf-yellow)_40%,white)] text-[var(--rf-ink)]",
+    active: "bg-[color:color-mix(in_srgb,var(--rf-blue)_35%,white)] text-[var(--rf-ink)]",
+    returned: "bg-[color:color-mix(in_srgb,var(--rf-cream)_85%,#d7dfeb)] text-[var(--rf-ink)]",
+    cancelled: "bg-[color:color-mix(in_srgb,var(--rf-orange)_22%,white)] text-[var(--rf-orange-deep)]",
+    expired: "bg-[color:color-mix(in_srgb,var(--rf-orange)_34%,white)] text-[var(--rf-orange-deep)]",
   };
 
   return (

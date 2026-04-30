@@ -52,7 +52,7 @@ export function AdminSidebar() {
 
   return (
     <>
-      <aside className="border-b border-slate-800 bg-slate-950 text-white lg:hidden">
+      <aside className="border-b border-[#de4325] bg-[linear-gradient(180deg,#ff7a45_0%,#ee4d2d_68%,#e64322_100%)] text-white lg:hidden">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-4 sm:px-6">
           <h2 className="text-lg font-bold">Royal Farm Admin</h2>
           <button
@@ -84,7 +84,7 @@ export function AdminSidebar() {
       {isOpen && (
         <div
           className={`fixed inset-0 z-50 transition-opacity duration-200 ease-out lg:hidden ${
-            isClosing ? "bg-slate-950/0" : "bg-slate-950/45"
+            isClosing ? "bg-[var(--rf-ink)]/0" : "bg-[var(--rf-ink)]/45"
           }`}
         >
           <div
@@ -101,7 +101,7 @@ export function AdminSidebar() {
           >
             <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
               <div>
-                <p className="text-lg font-bold text-slate-950">Admin Menu</p>
+                <p className="text-lg font-bold text-[var(--rf-ink)]">Admin Menu</p>
               </div>
               <button
                 aria-label="Close admin menu"
@@ -137,8 +137,8 @@ export function AdminSidebar() {
                   <Link
                     className={`flex items-center justify-between rounded-lg px-4 py-3 text-sm font-semibold transition ${
                       isActive
-                        ? "bg-slate-950 text-white shadow-sm"
-                        : "text-slate-700 hover:bg-slate-100"
+                        ? "bg-[var(--rf-yellow)] text-[var(--rf-ink)] shadow-sm"
+                        : "text-slate-700 hover:bg-[var(--rf-cream)]"
                     }`}
                     href={link.href}
                     key={link.href}
@@ -172,7 +172,7 @@ export function AdminSidebar() {
                   Open Customer Page
                 </Link>
                 <button
-                  className="text-left text-sm font-semibold text-rose-700"
+                  className="text-left text-sm font-semibold text-[var(--rf-orange)]"
                   disabled={isLoggingOut}
                   onClick={handleLogout}
                   type="button"
@@ -185,7 +185,7 @@ export function AdminSidebar() {
         </div>
       )}
 
-      <aside className="hidden border-b border-slate-800 bg-slate-950 text-white lg:block">
+      <aside className="hidden border-b border-[#de4325] bg-[linear-gradient(180deg,#ff7a45_0%,#ee4d2d_68%,#e64322_100%)] text-white lg:block">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-6 px-6 py-4">
           <div className="shrink-0">
             <p className="text-lg font-bold text-white">Royal Farm Admin</p>
@@ -204,8 +204,8 @@ export function AdminSidebar() {
                   <Link
                     className={`rounded-md px-4 py-2 text-sm font-semibold transition ${
                       isActive
-                        ? "bg-white text-slate-950 shadow-sm"
-                        : "text-white/75 hover:bg-white/10 hover:text-white"
+                        ? "bg-[var(--rf-yellow)] text-[var(--rf-ink)] shadow-sm"
+                        : "text-white/80 hover:bg-white/15 hover:text-white"
                     }`}
                     href={link.href}
                     key={link.href}
@@ -223,7 +223,7 @@ export function AdminSidebar() {
               Customer
             </Link>
             <button
-              className="shrink-0 text-sm font-semibold text-rose-300 transition hover:text-rose-200"
+              className="shrink-0 text-sm font-semibold text-[var(--rf-cream)] transition hover:text-white"
               disabled={isLoggingOut}
               onClick={handleLogout}
               type="button"

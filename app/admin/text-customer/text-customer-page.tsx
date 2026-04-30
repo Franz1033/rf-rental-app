@@ -50,39 +50,72 @@ function compareRentalsByNewest(first: RentalRecord, second: RentalRecord) {
   return second.createdAt - first.createdAt;
 }
 
+type AdminTextMessageHistory = {
+  createdAt: number;
+  customerName: string;
+  id: string;
+  message: string;
+  mobile: string;
+  rentalId: string | null;
+};
+
 export default function TextCustomerPage() {
   const [rentals] = useRentals();
   const [selectedRentalId, setSelectedRentalId] = useState("");
   const [template, setTemplate] = useState<TemplateKey>("return-now");
-  const [mobile, setMobile] = useState("");
-  const [message, setMessage] = useState("");
+  const [mobileDraft, setMobileDraft] = useState("");
+  const [messageDraft, setMessageDraft] = useState("");
+  const [hasEditedMobile, setHasEditedMobile] = useState(false);
+  const [hasEditedMessage, setHasEditedMessage] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [history, setHistory] = useState<AdminTextMessageHistory[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(true);
 
   const messageableRentals = rentals
     .filter((rental) => rental.mobile.trim())
     .slice()
     .sort(compareRentalsByNewest);
 
+  const activeRentalId = selectedRentalId || messageableRentals[0]?.id || "";
   const selectedRental =
-    messageableRentals.find((rental) => rental.id === selectedRentalId) ?? null;
+    messageableRentals.find((rental) => rental.id === activeRentalId) ?? null;
+  const mobile = hasEditedMobile ? mobileDraft : selectedRental?.mobile ?? "";
+  const message = hasEditedMessage
+    ? messageDraft
+    : selectedRental
+      ? buildTemplateMessage(template, selectedRental)
+      : "";
 
   useEffect(() => {
-    if (!selectedRentalId && messageableRentals.length > 0) {
-      setSelectedRentalId(messageableRentals[0].id);
-    }
-  }, [messageableRentals, selectedRentalId]);
+    const loadHistory = async () => {
+      try {
+        const response = await fetch("/api/admin/text-customer", {
+          cache: "no-store",
+        });
+        const body = (await response.json().catch(() => ({}))) as {
+          message?: string;
+          messages?: AdminTextMessageHistory[];
+        };
 
-  useEffect(() => {
-    if (!selectedRental) {
-      setMobile("");
-      setMessage("");
-      return;
-    }
+        if (!response.ok) {
+          throw new Error(body.message ?? "Unable to load text history.");
+        }
 
-    setMobile(selectedRental.mobile);
-    setMessage(buildTemplateMessage(template, selectedRental));
-  }, [selectedRental, template]);
+        setHistory(body.messages ?? []);
+      } catch (error) {
+        setFeedback(
+          error instanceof Error
+            ? error.message
+            : "Unable to load text history.",
+        );
+      } finally {
+        setIsLoadingHistory(false);
+      }
+    };
+
+    void loadHistory();
+  }, []);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -103,8 +136,10 @@ export default function TextCustomerPage() {
     try {
       const response = await fetch("/api/admin/text-customer", {
         body: JSON.stringify({
+          customerName: selectedRental?.customerName ?? "",
           message: message.trim(),
           mobile,
+          rentalId: selectedRental?.id ?? "",
         }),
         headers: {
           "Content-Type": "application/json",
@@ -112,6 +147,7 @@ export default function TextCustomerPage() {
         method: "POST",
       });
       const body = (await response.json().catch(() => ({}))) as {
+        messageLog?: AdminTextMessageHistory;
         message?: string;
       };
 
@@ -120,6 +156,9 @@ export default function TextCustomerPage() {
       }
 
       setFeedback("Customer SMS sent.");
+      if (body.messageLog) {
+        setHistory((current) => [body.messageLog!, ...current].slice(0, 30));
+      }
     } catch (error) {
       setFeedback(
         error instanceof Error ? error.message : "Unable to send customer SMS.",
@@ -131,12 +170,12 @@ export default function TextCustomerPage() {
 
   return (
     <section className="space-y-5">
-      <header className="space-y-3 py-2">
+      <header className="space-y-3 rounded-md bg-[linear-gradient(180deg,#ff7a45_0%,#ee4d2d_68%,#e64322_100%)] px-5 py-5 text-white">
         <div>
-          <h1 className="text-3xl font-bold tracking-normal text-slate-950 sm:text-4xl">
+          <h1 className="text-3xl font-bold tracking-normal text-white sm:text-4xl">
             Text Customer
           </h1>
-          <p className="mt-2 max-w-3xl text-base leading-7 text-slate-700">
+          <p className="mt-2 max-w-3xl text-base leading-7 text-[#ffe7d6]">
             Send a manual SMS to a customer. Pick one of the recent rentals,
             choose a ready-made message, then edit it however you need before
             sending.
@@ -145,19 +184,26 @@ export default function TextCustomerPage() {
       </header>
 
       {messageableRentals.length === 0 ? (
-        <p className="rounded-lg bg-white p-4 text-sm text-slate-600 shadow-sm">
+        <p className="rounded-sm border border-[#ececec] bg-white p-4 text-sm text-slate-600 shadow-sm">
           Rentals with customer mobile numbers will appear here once checkout is
           completed.
         </p>
       ) : (
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1.4fr)]">
-          <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-            <label className="block text-sm font-semibold text-slate-800">
+        <>
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1.4fr)]">
+            <section className="rounded-sm border border-[#ececec] bg-white p-4 shadow-sm">
+            <label className="block text-sm font-semibold text-[var(--rf-ink)]">
               Customer rental
               <select
-                className="mt-2 h-12 w-full rounded-md border border-slate-300 bg-white px-3 text-sm outline-none focus:border-teal-600"
-                onChange={(event) => setSelectedRentalId(event.target.value)}
-                value={selectedRentalId}
+                className="mt-2 h-12 w-full rounded-sm border border-[#dddddd] bg-white px-3 text-sm outline-none focus:border-[#ee4d2d]"
+                onChange={(event) => {
+                  setSelectedRentalId(event.target.value);
+                  setHasEditedMobile(false);
+                  setHasEditedMessage(false);
+                  setMobileDraft("");
+                  setMessageDraft("");
+                }}
+                value={activeRentalId}
               >
                 {messageableRentals.map((rental) => (
                   <option key={rental.id} value={rental.id}>
@@ -185,7 +231,7 @@ export default function TextCustomerPage() {
             )}
 
             {selectedRental && (
-              <div className="mt-4 rounded-md bg-slate-50 p-3">
+              <div className="mt-4 rounded-sm bg-[#fafafa] p-3">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Items
                 </p>
@@ -194,17 +240,19 @@ export default function TextCustomerPage() {
                 </p>
               </div>
             )}
-          </section>
+            </section>
 
-          <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-            <form className="space-y-4" onSubmit={handleSubmit}>
-              <label className="block text-sm font-semibold text-slate-800">
+            <section className="rounded-sm border border-[#ececec] bg-white p-4 shadow-sm">
+              <form className="space-y-4" onSubmit={handleSubmit}>
+              <label className="block text-sm font-semibold text-[var(--rf-ink)]">
                 Message type
                 <select
-                  className="mt-2 h-12 w-full rounded-md border border-slate-300 bg-white px-3 text-sm outline-none focus:border-teal-600"
-                  onChange={(event) =>
-                    setTemplate(event.target.value as TemplateKey)
-                  }
+                  className="mt-2 h-12 w-full rounded-sm border border-[#dddddd] bg-white px-3 text-sm outline-none focus:border-[#ee4d2d]"
+                  onChange={(event) => {
+                    setTemplate(event.target.value as TemplateKey);
+                    setHasEditedMessage(false);
+                    setMessageDraft("");
+                  }}
                   value={template}
                 >
                   {templateOptions.map((option) => (
@@ -215,24 +263,30 @@ export default function TextCustomerPage() {
                 </select>
               </label>
 
-              <label className="block text-sm font-semibold text-slate-800">
+              <label className="block text-sm font-semibold text-[var(--rf-ink)]">
                 Customer mobile
                 <input
-                  className="mt-2 h-12 w-full rounded-md border border-slate-300 px-3 text-base outline-none focus:border-teal-600"
+                  className="mt-2 h-12 w-full rounded-sm border border-[#dddddd] px-3 text-base outline-none focus:border-[#ee4d2d]"
                   disabled={isSending}
                   inputMode="tel"
-                  onChange={(event) => setMobile(event.target.value)}
+                  onChange={(event) => {
+                    setHasEditedMobile(true);
+                    setMobileDraft(event.target.value);
+                  }}
                   placeholder="09XX XXX XXXX"
                   value={mobile}
                 />
               </label>
 
-              <label className="block text-sm font-semibold text-slate-800">
+              <label className="block text-sm font-semibold text-[var(--rf-ink)]">
                 Message
                 <textarea
-                  className="mt-2 min-h-44 w-full rounded-md border border-slate-300 px-3 py-3 text-sm leading-6 outline-none focus:border-teal-600"
+                  className="mt-2 min-h-44 w-full rounded-sm border border-[#dddddd] px-3 py-3 text-sm leading-6 outline-none focus:border-[#ee4d2d]"
                   disabled={isSending}
-                  onChange={(event) => setMessage(event.target.value)}
+                  onChange={(event) => {
+                    setHasEditedMessage(true);
+                    setMessageDraft(event.target.value);
+                  }}
                   placeholder="Type the SMS message here."
                   value={message}
                 />
@@ -246,15 +300,68 @@ export default function TextCustomerPage() {
               {feedback && <p className="text-sm text-slate-600">{feedback}</p>}
 
               <button
-                className="h-11 rounded-md bg-slate-950 px-4 text-sm font-bold text-white disabled:bg-slate-300"
+                className="h-11 rounded-sm bg-[#ee4d2d] px-4 text-sm font-bold text-white transition hover:bg-[#d84315] disabled:bg-slate-300"
                 disabled={isSending || !selectedRental}
                 type="submit"
               >
                 {isSending ? "Sending..." : "Send SMS"}
               </button>
-            </form>
+              </form>
+            </section>
+          </div>
+
+          <section className="rounded-sm border border-[#ececec] bg-white p-4 shadow-sm">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-bold text-[var(--rf-ink)]">
+                  Sent message history
+                </h2>
+                <p className="mt-1 text-sm text-slate-600">
+                  Only messages sent from this admin text tool appear here.
+                </p>
+              </div>
+            </div>
+
+            {isLoadingHistory ? (
+              <p className="mt-4 text-sm text-slate-500">Loading history...</p>
+            ) : history.length === 0 ? (
+              <p className="mt-4 rounded-sm bg-[#fafafa] p-3 text-sm text-slate-600">
+                No successfully sent admin text messages yet.
+              </p>
+            ) : (
+              <div className="mt-4 space-y-3">
+                {history.map((entry) => (
+                  <article
+                    className="rounded-sm border border-[#efefef] bg-[#fafafa] p-3"
+                    key={entry.id}
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-[var(--rf-ink)]">
+                          {entry.customerName || "Customer"}{" "}
+                          <span className="font-normal text-slate-500">
+                            {entry.mobile}
+                          </span>
+                        </p>
+                        {entry.rentalId && (
+                          <p className="mt-1 text-xs text-slate-500">
+                            Rental ID: {entry.rentalId}
+                          </p>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-500">
+                        {formatTime(entry.createdAt)}
+                      </p>
+                    </div>
+                    <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-700">
+                      {entry.message}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            )}
           </section>
-        </div>
+        </>
       )}
     </section>
   );
@@ -262,11 +369,11 @@ export default function TextCustomerPage() {
 
 function InfoCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-slate-100 bg-slate-50 px-3 py-2">
+    <div className="rounded-sm border border-[#efefef] bg-[#fafafa] px-3 py-2">
       <dt className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
         {label}
       </dt>
-      <dd className="mt-1 font-semibold text-slate-950">{value || "Not set"}</dd>
+      <dd className="mt-1 font-semibold text-[var(--rf-ink)]">{value || "Not set"}</dd>
     </div>
   );
 }

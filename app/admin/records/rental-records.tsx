@@ -27,12 +27,12 @@ export default function AdminRentalRecords() {
 
   return (
     <section className="space-y-5">
-      <header className="space-y-3 py-2">
+      <header className="space-y-3 rounded-md bg-[linear-gradient(180deg,#ff7a45_0%,#ee4d2d_68%,#e64322_100%)] px-5 py-5 text-white">
         <div>
-          <h1 className="text-3xl font-bold tracking-normal text-slate-950 sm:text-4xl">
+          <h1 className="text-3xl font-bold tracking-normal text-white sm:text-4xl">
             Rental records
           </h1>
-          <p className="mt-2 max-w-2xl text-base leading-7 text-slate-700">
+          <p className="mt-2 max-w-2xl text-base leading-7 text-[#ffe7d6]">
             Review customer, payment, activation, return, and SMS reminder
             details.
           </p>
@@ -40,7 +40,7 @@ export default function AdminRentalRecords() {
       </header>
 
       {rentals.length === 0 ? (
-        <p className="rounded-lg bg-white p-4 text-sm text-slate-600 shadow-sm">
+        <p className="rounded-sm border border-[#ececec] bg-white p-4 text-sm text-slate-600 shadow-sm">
           Completed customer checkouts will appear here with customer, payment,
           activation, return, and SMS reminder details.
         </p>
@@ -48,7 +48,7 @@ export default function AdminRentalRecords() {
         <div className="space-y-3">
           <select
             aria-label="Filter rental records by status"
-            className="h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm font-semibold outline-none focus:border-teal-600"
+            className="h-11 w-full rounded-sm border border-[#dddddd] bg-white px-3 text-sm font-semibold outline-none focus:border-[#ee4d2d]"
             onChange={(event) =>
               setStatusFilter(event.target.value as "all" | RentalStatus)
             }
@@ -69,7 +69,7 @@ export default function AdminRentalRecords() {
       )}
 
       {rentals.length > 0 && filteredRentals.length === 0 ? (
-        <p className="rounded-lg bg-white p-4 text-sm text-slate-600 shadow-sm">
+        <p className="rounded-sm border border-[#ececec] bg-white p-4 text-sm text-slate-600 shadow-sm">
           No rental records match the current filters.
         </p>
       ) : (
@@ -106,11 +106,11 @@ function RentalRecordCard({
   rental: RentalRecord;
 }) {
   return (
-    <article className="rounded-lg bg-white p-4 shadow-sm">
+    <article className="rounded-sm border border-[#ececec] bg-white p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div>
           <b className="block">{rental.id}</b>
-          <p className="text-sm text-slate-600">{getRentalTitle(rental)}</p>
+          <p className="text-sm text-[#666]">{getRentalTitle(rental)}</p>
         </div>
         <StatusBadge status={rental.status} />
       </div>
@@ -125,7 +125,7 @@ function RentalRecordCard({
       </dl>
 
       <button
-        className="mt-4 text-sm font-semibold text-slate-700 underline-offset-4 transition hover:text-slate-950 hover:underline"
+        className="mt-4 text-sm font-semibold text-[var(--rf-ink)] underline-offset-4 transition hover:text-[var(--rf-orange-deep)] hover:underline"
         onClick={onToggle}
         type="button"
       >
@@ -146,20 +146,20 @@ function RentalRecordCard({
             />
           </dl>
 
-          <div className="mt-4 rounded-md bg-slate-50 p-3">
+          <div className="mt-4 rounded-sm bg-[#fafafa] p-3">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
               Items
             </p>
             <div className="mt-2 space-y-2">
               {getRentalItems(rental).map((item) => (
                 <div
-                  className="rounded-md bg-white px-3 py-2 text-sm"
+                  className="rounded-sm border border-[#efefef] bg-white px-3 py-2 text-sm"
                   key={item.id ?? `${item.floatId}-${item.durationMinutes}`}
                 >
                   <b className="block">{item.floatName}</b>
                   <span className="block text-slate-600">x{item.quantity}</span>
                   {item.returnedAt && (
-                    <span className="mt-1 block text-xs font-semibold text-emerald-700">
+                      <span className="mt-1 block text-xs font-semibold text-[var(--rf-blue-deep)]">
                       Returned {formatTime(item.returnedAt)}
                     </span>
                   )}
@@ -177,18 +177,18 @@ function RecordRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-start justify-between gap-4">
       <dt className="shrink-0 text-slate-500">{label}</dt>
-      <dd className="text-right font-semibold text-slate-950">{value}</dd>
+      <dd className="text-right font-semibold text-[var(--rf-ink)]">{value}</dd>
     </div>
   );
 }
 
 function DetailCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-slate-100 bg-slate-50 px-3 py-2">
+    <div className="rounded-sm border border-[#efefef] bg-[#fafafa] px-3 py-2">
       <dt className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
         {label}
       </dt>
-      <dd className="mt-1 font-semibold text-slate-950">{value}</dd>
+      <dd className="mt-1 font-semibold text-[var(--rf-ink)]">{value}</dd>
     </div>
   );
 }

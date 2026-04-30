@@ -11,6 +11,7 @@ type RentalCatalogItemRow = {
   maxHours: number;
   maxQuantity: number;
   availableQuantity: number;
+  pendingQuantity: number;
   imageUrl: string;
   isActive: boolean;
   sortOrder: number;
@@ -137,9 +138,10 @@ async function getCatalogItems() {
       catalog."maxHours",
       catalog."maxQuantity",
       GREATEST(
-        catalog."maxQuantity" - COALESCE(open_items."reservedQuantity", 0),
+        catalog."maxQuantity" - COALESCE(reserved_items."reservedQuantity", 0),
         0
       )::int AS "availableQuantity",
+      COALESCE(reserved_items."pendingQuantity", 0)::int AS "pendingQuantity",
       catalog."imageUrl",
       catalog."isActive",
       catalog."sortOrder",
@@ -149,15 +151,24 @@ async function getCatalogItems() {
     LEFT JOIN (
       SELECT
         item."floatId",
-        COALESCE(SUM(item."quantity"), 0)::int AS "reservedQuantity"
+        COALESCE(SUM(item."quantity"), 0)::int AS "reservedQuantity",
+        COALESCE(
+          SUM(
+            CASE
+              WHEN rental."status" = 'pending' THEN item."quantity"
+              ELSE 0
+            END
+          ),
+          0
+        )::int AS "pendingQuantity"
       FROM "RentalItem" item
       INNER JOIN "Rental" rental
         ON rental."id" = item."rentalId"
       WHERE item."returnedAt" IS NULL
-        AND rental."status" = 'active'
+        AND rental."status" IN ('pending', 'active')
       GROUP BY item."floatId"
-    ) open_items
-      ON open_items."floatId" = catalog."id"
+    ) reserved_items
+      ON reserved_items."floatId" = catalog."id"
     WHERE catalog."isActive" = true
     ORDER BY catalog."sortOrder" ASC, catalog."name" ASC
   `;

@@ -18,4 +18,6 @@
 [X] - Bug: When I delete something on checkout, page goes blank
 [X] - Page to text customer 
         - Can customize message and also have like you know the message they can choose from
-[ ] - Test the SMS for customer reminder and pickup due
+[ ] - Test the SMS for customer reminder and pickup due as well as admin
+[ ] - Change the disabled button colors to near orange instead of gray
+[ ] - Do a full feature test on customer and admin

@@ -499,7 +499,7 @@ export default function AdminRentalSystem() {
   return (
     <section className="space-y-5">
       <div className="mx-auto grid max-w-5xl items-start gap-6 lg:grid-cols-2">
-        <section className="min-w-0 w-full max-w-full overflow-hidden rounded-lg border border-slate-900/80 bg-slate-950 p-4 text-white box-border">
+        <section className="min-w-0 w-full max-w-full overflow-hidden rounded-lg border border-[var(--rf-ink)]/35 bg-[var(--rf-ink)] p-4 text-white box-border">
           <h2 className="text-2xl font-bold">Retrieve rental</h2>
           <p className="mt-2 text-sm text-white/65">
             Scan, upload, or enter the rental code.
@@ -546,8 +546,8 @@ export default function AdminRentalSystem() {
             <button
               className={`flex h-11 items-center justify-center gap-2 rounded-md px-3 text-sm font-bold transition ${
                 isCameraOpen
-                  ? "bg-white/85 text-slate-950"
-                  : "bg-white text-slate-950 hover:bg-white/90"
+                  ? "bg-[var(--rf-yellow)] text-[var(--rf-ink)]"
+                  : "bg-white text-[var(--rf-ink)] hover:bg-[var(--rf-yellow)]/90"
               }`}
               onClick={isCameraOpen ? stopCameraScanner : startCameraScanner}
               type="button"
@@ -622,33 +622,33 @@ export default function AdminRentalSystem() {
               Looking up rental {lookupCode}...
             </p>
           ) : lookupCode ? (
-            <p className="mt-3 rounded-md bg-rose-500/15 p-3 text-sm text-rose-100">
+            <p className="mt-3 rounded-md bg-[var(--rf-orange)]/20 p-3 text-sm text-[var(--rf-yellow)]">
               No rental found for {lookupCode}. Ask the customer to present the
               latest QR pass.
             </p>
           ) : null}
         </section>
 
-        <section className="w-full max-w-full overflow-hidden rounded-lg border border-slate-200 bg-white p-4 box-border lg:self-start">
-          <h2 className="text-lg font-bold">Pending rentals</h2>
+        <section className="w-full max-w-full overflow-hidden rounded-xl border border-[var(--rf-blue)]/30 bg-white/92 p-4 shadow-[0_10px_24px_rgba(81,154,102,0.12)] box-border lg:self-start">
+          <h2 className="text-lg font-bold text-[var(--rf-ink)]">Pending rentals</h2>
           <div className="mt-3 space-y-3">
             {pendingRentals.length === 0 && (
-              <p className="rounded-md bg-slate-50 p-3 text-sm text-slate-600">
+              <p className="rounded-lg bg-[color:color-mix(in_srgb,var(--rf-yellow)_42%,white)] p-3 text-sm text-[var(--rf-ink)]/75">
                 No pending rentals.
               </p>
             )}
             {pendingRentals.map((rental) => (
               <div
-                className="rounded-md border border-slate-200 p-3 text-sm"
+                className="rounded-xl border border-[var(--rf-blue)]/22 bg-[color:color-mix(in_srgb,var(--rf-yellow)_22%,white)] p-3 text-sm"
                 key={rental.id}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <b className="block">{rental.id}</b>
-                    <span className="mt-1 block text-slate-600">
+                    <span className="mt-1 block text-[var(--rf-ink)]/72">
                       {rental.customerName}
                     </span>
-                    <span className="mt-2 inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-800">
+                    <span className="mt-2 inline-flex items-center rounded-full bg-[var(--rf-yellow)] px-2.5 py-1 text-xs font-bold text-[var(--rf-ink)]">
                       Expires in {formatPendingCountdown(rental, now)}
                     </span>
                   </div>
@@ -657,7 +657,7 @@ export default function AdminRentalSystem() {
                       aria-expanded={openPendingMenuId === rental.id}
                       aria-haspopup="menu"
                       aria-label={`More actions for ${rental.id}`}
-                      className="inline-flex size-9 items-center justify-center rounded-md border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-700"
+                      className="inline-flex size-9 items-center justify-center rounded-md border border-[var(--rf-blue)]/25 text-[var(--rf-ink)]/55 transition hover:bg-white hover:text-[var(--rf-ink)]"
                       onClick={(event) => {
                         event.stopPropagation();
                         setOpenPendingMenuId((current) =>
@@ -679,12 +679,12 @@ export default function AdminRentalSystem() {
                     </button>
                     {openPendingMenuId === rental.id && (
                       <div
-                        className="absolute right-0 top-10 z-10 rounded-md border border-slate-200 bg-white p-1 shadow-lg"
+                        className="absolute right-0 top-10 z-10 rounded-md border border-[var(--rf-blue)]/24 bg-white p-1 shadow-lg"
                         onClick={(event) => event.stopPropagation()}
                         role="menu"
                       >
                         <button
-                          className="flex items-center whitespace-nowrap rounded px-3 py-2 text-left text-sm font-semibold text-rose-700 transition hover:bg-rose-50"
+                          className="flex items-center whitespace-nowrap rounded px-3 py-2 text-left text-sm font-semibold text-[var(--rf-orange-deep)] transition hover:bg-[color:color-mix(in_srgb,var(--rf-orange)_14%,white)]"
                           onClick={() => {
                             setOpenPendingMenuId(null);
                             cancelRental(rental.id);
@@ -699,7 +699,7 @@ export default function AdminRentalSystem() {
                   </div>
                 </div>
                 <button
-                  className="mt-3 h-10 w-full rounded-md border border-slate-200 bg-slate-50 text-xs font-bold text-slate-700"
+                  className="mt-3 h-10 w-full rounded-md border border-[var(--rf-blue)]/24 bg-white text-xs font-bold text-[var(--rf-ink)]"
                   onClick={() => {
                     setScanCode(rental.id);
                     setScannerMessage("");
@@ -800,7 +800,7 @@ function RentalVerificationCard({
 }) {
   return (
     <div className="mt-4 rounded-lg border border-white/10 bg-white/10 p-3 text-sm">
-      <div className="rounded-lg bg-slate-950/25 p-3">
+      <div className="rounded-lg bg-white/10 p-3">
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="font-mono text-xl font-bold text-white">
@@ -810,7 +810,7 @@ function RentalVerificationCard({
           <StatusBadge status={rental.status} />
         </div>
       </div>
-      <dl className="mt-3 divide-y divide-white/10 rounded-lg bg-slate-950/15">
+      <dl className="mt-3 divide-y divide-white/10 rounded-lg bg-white/7">
         <CompactDetailRow label="Customer" value={rental.customerName} />
         <CompactDetailRow label="Cottage" value={rental.cottageNumber} />
         <CompactDetailRow label="Mobile" value={rental.mobile} />
@@ -831,7 +831,7 @@ function RentalVerificationCard({
         )}
       </dl>
       {rental.status !== "active" && (
-        <div className="mt-3 rounded-lg bg-slate-950/15 p-3">
+        <div className="mt-3 rounded-lg bg-white/7 p-3">
           <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/45">
             Rented items
           </p>
@@ -855,14 +855,14 @@ function RentalVerificationCard({
       {rental.status === "pending" && (
         <div className="mt-3 grid gap-2">
           <button
-            className="h-11 w-full rounded-md bg-amber-300 px-4 font-bold text-slate-950"
+            className="h-11 w-full rounded-md bg-[var(--rf-yellow)] px-4 font-bold text-[var(--rf-ink)]"
             onClick={() => onActivate(rental.id)}
             type="button"
           >
             Activate
           </button>
           <button
-            className="h-11 w-full rounded-md bg-rose-600 px-4 font-bold text-white hover:bg-rose-500"
+            className="h-11 w-full rounded-md bg-[var(--rf-orange)] px-4 font-bold text-white hover:bg-[var(--rf-orange-deep)]"
             onClick={() => onCancel(rental.id)}
             type="button"
           >
@@ -883,7 +883,7 @@ function RentalVerificationCard({
           ))}
           {getOpenRentalItems(rental).length > 1 && (
             <button
-              className="h-11 w-full rounded-md bg-emerald-300 px-4 font-bold text-slate-950"
+              className="h-11 w-full rounded-md bg-[var(--rf-blue)] px-4 font-bold text-[var(--rf-ink)]"
               onClick={() => onReturn(rental.id)}
               type="button"
             >
@@ -936,14 +936,14 @@ function ActiveReturnItemCard({
             {formatAmountDue(item.subtotal)}
           </p>
           {isRentalItemReturned(item) && (
-            <p className="mt-1 text-xs font-semibold text-emerald-300">
+            <p className="mt-1 text-xs font-semibold text-[var(--rf-blue)]">
               Returned {formatTime(item.returnedAt)}
             </p>
           )}
         </div>
         {!isRentalItemReturned(item) && (
           <button
-            className="rounded-md border border-emerald-200 bg-emerald-300 px-3 py-2 text-xs font-bold text-slate-950"
+            className="rounded-md border border-[var(--rf-blue)]/45 bg-[var(--rf-blue)] px-3 py-2 text-xs font-bold text-[var(--rf-ink)]"
             onClick={() => onReturnItem(rental.id, item.id, itemIndex)}
             type="button"
           >

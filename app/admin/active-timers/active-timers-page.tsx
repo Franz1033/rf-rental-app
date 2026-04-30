@@ -40,26 +40,26 @@ type ActiveTimerEntry = {
 function getTimerTone(totalSeconds: number) {
   if (totalSeconds === 0) {
     return {
-      chipClass: "bg-rose-50 text-rose-700",
-      labelClass: "text-rose-600",
-      progressClass: "bg-rose-500",
+      chipClass: "bg-[color:color-mix(in_srgb,var(--rf-orange)_18%,white)] text-[var(--rf-orange-deep)]",
+      labelClass: "text-[var(--rf-orange-deep)]",
+      progressClass: "bg-[var(--rf-orange)]",
       title: "Ended",
     };
   }
 
   if (totalSeconds <= 15 * 60) {
     return {
-      chipClass: "bg-amber-50 text-amber-800",
-      labelClass: "text-amber-700",
-      progressClass: "bg-amber-400",
+      chipClass: "bg-[color:color-mix(in_srgb,var(--rf-yellow)_68%,white)] text-[var(--rf-ink)]",
+      labelClass: "text-[var(--rf-ink)]",
+      progressClass: "bg-[var(--rf-yellow)]",
       title: "Due soon",
     };
   }
 
   return {
-    chipClass: "bg-emerald-50 text-emerald-800",
-    labelClass: "text-emerald-700",
-    progressClass: "bg-emerald-500",
+    chipClass: "bg-[color:color-mix(in_srgb,var(--rf-blue)_25%,white)] text-[var(--rf-ink)]",
+    labelClass: "text-[var(--rf-ink)]",
+    progressClass: "bg-[var(--rf-blue)]",
     title: "Time left",
   };
 }
@@ -245,11 +245,11 @@ export default function ActiveTimersPage() {
 
   return (
     <section className="space-y-5">
-      <section className="rounded-lg bg-white p-4 shadow-sm">
-        <h2 className="text-lg font-bold">Active Rentals</h2>
+      <section className="rounded-xl border border-[var(--rf-blue)]/28 bg-white/92 p-4 shadow-[0_10px_24px_rgba(81,154,102,0.12)]">
+        <h2 className="text-lg font-bold text-[var(--rf-ink)]">Active Rentals</h2>
         <div className="mt-3 grid gap-3 md:grid-cols-2">
           {activeTimerEntries.length === 0 && (
-            <p className="rounded-md bg-slate-50 p-3 text-sm text-slate-600 md:col-span-2">
+            <p className="rounded-lg bg-[color:color-mix(in_srgb,var(--rf-yellow)_42%,white)] p-3 text-sm text-[var(--rf-ink)]/75 md:col-span-2">
               No active rentals yet.
             </p>
           )}
@@ -272,7 +272,7 @@ export default function ActiveTimersPage() {
 
             return (
               <button
-                className="rounded-md border border-slate-200 p-3 text-left transition hover:border-slate-300"
+                className="rounded-xl border border-[var(--rf-blue)]/22 bg-[color:color-mix(in_srgb,var(--rf-yellow)_22%,white)] p-3 text-left transition hover:border-[var(--rf-blue)]/42"
                 key={key}
                 onClick={() => setSelectedTimerId(rental.id)}
                 type="button"
@@ -280,10 +280,10 @@ export default function ActiveTimersPage() {
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <b className="block">{item.floatName}</b>
-                    <span className="block text-xs text-slate-600">
+                    <span className="block text-xs text-[var(--rf-ink)]/72">
                       {rental.id} · {formatRentalDuration(item.durationMinutes)}
                     </span>
-                    <span className="mt-1 text-xs text-slate-600">
+                    <span className="mt-1 text-xs text-[var(--rf-ink)]/72">
                       Ends at {formattedEndTime}
                     </span>
                   </div>
@@ -294,7 +294,7 @@ export default function ActiveTimersPage() {
                     totalSeconds={remainingSeconds}
                   />
                 </div>
-                <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
+                <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/80">
                   <div
                     className={`h-full rounded-full transition-all ${timerTone.progressClass}`}
                     style={{ width: `${progress}%` }}
@@ -317,6 +317,7 @@ export default function ActiveTimersPage() {
     </section>
   );
 }
+
 
 function CountdownDisplay({
   label,
@@ -402,7 +403,7 @@ function ActiveTimerModal({
     <div
       aria-labelledby="active-timer-title"
       aria-modal="true"
-      className="fixed inset-0 z-50 grid place-items-end bg-slate-950/55 p-0 sm:place-items-center sm:p-4"
+      className="fixed inset-0 z-50 grid place-items-end bg-[var(--rf-ink)]/45 p-0 sm:place-items-center sm:p-4"
       onClick={onClose}
       role="dialog"
     >
@@ -412,7 +413,7 @@ function ActiveTimerModal({
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-sm font-semibold text-teal-700">Active rental</p>
+            <p className="text-sm font-semibold text-[var(--rf-orange-deep)]">Active rental</p>
             <h2 className="text-2xl font-bold" id="active-timer-title">
               {rental.id}
             </h2>
@@ -511,7 +512,7 @@ function ActiveTimerModal({
                         {formatAmountDue(item.subtotal)}
                       </p>
                       {isRentalItemReturned(item) && (
-                        <p className="mt-1 text-xs font-semibold text-emerald-700">
+                        <p className="mt-1 text-xs font-semibold text-[var(--rf-blue-deep)]">
                           Returned {formatTime(item.returnedAt)}
                         </p>
                       )}
@@ -531,7 +532,7 @@ function ActiveTimerModal({
                   </div>
                   {!isRentalItemReturned(item) && (
                     <button
-                      className="mt-3 h-10 w-full rounded-md border border-emerald-200 bg-white text-sm font-bold text-emerald-800"
+                      className="mt-3 h-10 w-full rounded-md border border-[color:color-mix(in_srgb,var(--rf-blue)_40%,white)] bg-white text-sm font-bold text-[var(--rf-ink)]"
                       onClick={() => onReturnItem(rental.id, item.id, index)}
                       type="button"
                     >
@@ -546,7 +547,7 @@ function ActiveTimerModal({
 
         <div className="mt-4">
           <button
-            className="h-11 w-full rounded-md bg-slate-950 text-sm font-bold text-white"
+            className="h-11 w-full rounded-md bg-[var(--rf-orange)] text-sm font-bold text-white transition hover:bg-[var(--rf-orange-deep)]"
             onClick={() => onReturn(rental.id)}
             type="button"
           >
@@ -564,7 +565,7 @@ function DetailItem({ label, value }: { label: string; value: string }) {
       <dt className="shrink-0 text-xs font-semibold uppercase tracking-wide text-slate-500">
         {label}
       </dt>
-      <dd className="text-right font-semibold text-slate-950">{value}</dd>
+      <dd className="text-right font-semibold text-[var(--rf-ink)]">{value}</dd>
     </div>
   );
 }

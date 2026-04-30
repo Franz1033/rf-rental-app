@@ -35,7 +35,7 @@ type ToastState = {
 
 const freeRentalCooldownMs = 24 * 60 * 60 * 1000;
 const gcashEnabled = false;
-const smsVerificationEnabled = true;
+const smsVerificationEnabled = false;
 const getCurrentTimestamp = () => new Date().getTime();
 
 const clampCartValue = (value: number, max: number) =>
@@ -57,6 +57,14 @@ const formatPendingExpirationLabel = () => {
   return `${totalSeconds} second${totalSeconds === 1 ? "" : "s"}`;
 };
 
+function BrandTitle() {
+  return (
+    <p className="text-base font-medium tracking-[0.02em] text-[#f7fff8] sm:text-lg">
+      Royal Farm Rentals
+    </p>
+  );
+}
+
 export default function RentalSystem() {
   const [floats, refreshItems, isLoadingItems] = useRentalItems();
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -77,6 +85,7 @@ export default function RentalSystem() {
     useState(false);
   const [isCheckingVerificationCode, setIsCheckingVerificationCode] =
     useState(false);
+  const [isNewRentalModalOpen, setIsNewRentalModalOpen] = useState(false);
   const [rentals, , refreshRentals] = useRentals();
   const [currentRentalId, setCurrentRentalId] = useState<string | null>(null);
   const [currentRentalSnapshot, setCurrentRentalSnapshot] =
@@ -252,6 +261,7 @@ export default function RentalSystem() {
     setIsGeneratingQr(false);
     setIsSendingVerificationCode(false);
     setIsCheckingVerificationCode(false);
+    setIsNewRentalModalOpen(false);
     setCurrentRentalId(null);
     setCurrentRentalSnapshot(null);
     setStep("choose");
@@ -501,62 +511,69 @@ export default function RentalSystem() {
   };
 
   const confirmNewRental = () => {
-    if (
-      window.confirm(
-        "Start a new rental? Make sure the customer has saved or presented this QR pass first.",
-      )
-    ) {
-      resetCheckout();
-    }
+    setIsNewRentalModalOpen(true);
   };
 
   const showItemSkeletons = isLoadingItems && floats.length === 0;
 
   return (
-    <main className="min-h-screen bg-[#f7f4ec] text-slate-950">
-      <section className="mx-auto flex w-full max-w-3xl flex-col gap-5 px-4 py-5 sm:px-6 lg:py-8">
-        <header className="space-y-3 py-2">
-          <p className="text-sm font-semibold uppercase tracking-wide text-teal-700">
-            Royal Farm Resort
-          </p>
-          <h1 className="text-3xl font-bold tracking-normal text-slate-950 sm:text-4xl">
-            Pool Float Rentals
-          </h1>
-        </header>
-
-        {step === "choose" && (
+    <main className="min-h-screen bg-[#f5f5f5] text-[var(--rf-ink)]">
+      <section className="mx-auto flex w-full max-w-5xl flex-col gap-0 px-0 py-0">
+        {step === "choose" ? (
           <>
-            <section className="rounded-lg bg-white p-4 shadow-sm">
+            <section className="mx-4 mt-4 overflow-hidden rounded-md border border-[#ebebeb] bg-white shadow-sm sm:mx-6">
+              <header className="bg-[linear-gradient(180deg,#3fa55b_0%,#2f8f49_62%,#1f7a36_100%)] px-5 py-4 text-white">
+                <BrandTitle />
+              </header>
+
+              <div className="p-4">
               <div className="flex items-center justify-between gap-3">
-                <div>
-                  <h2 className="text-lg font-bold">Rental cart</h2>
-                  <p className="text-sm text-slate-600">
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-2xl font-bold leading-tight text-[#222]">
+                    Rental Cart
+                  </h2>
+                  <p className="text-sm text-[#666]">
                     {totalQuantity} item{totalQuantity === 1 ? "" : "s"}{" "}
                     selected
                   </p>
                 </div>
-                {cart.length > 0 && <b>{formatAmountDue(totalAmount)}</b>}
+                <span className="grid size-12 shrink-0 place-items-center rounded-sm bg-[#e7f4ea] text-[#1f7a36]">
+                  <svg
+                    aria-hidden="true"
+                    className="size-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle cx="8" cy="21" r="1" />
+                    <circle cx="19" cy="21" r="1" />
+                    <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h8.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
+                  </svg>
+                </span>
               </div>
               {cart.length === 0 ? (
-                <p className="mt-3 rounded-md bg-slate-50 p-3 text-sm text-slate-600">
+                <p className="mt-4 rounded-sm bg-[#edf5ef] p-3 text-sm text-[#3f5946]">
                   Add to cart an item to continue.
                 </p>
               ) : (
-                <div className="mt-3 space-y-2">
+                <div className="mt-4 space-y-2">
                   {cart.map((item) => (
                     <div
-                      className="flex items-center justify-between gap-3 rounded-md border border-slate-100 p-3 text-sm"
+                      className="flex items-center justify-between gap-3 rounded-sm border border-[#f0f0f0] bg-white p-3 text-sm"
                       key={item.entryId}
                     >
                       <div>
-                        <b>{item.name}</b>
-                        <p className="text-slate-600">
+                        <b className="text-base text-[#222]">{item.name}</b>
+                        <p className="text-[var(--rf-ink)]/72">
                           {formatRentalDuration(item.hours * 60)} ·{" "}
                           {formatAmountDue(item.price * item.hours)}
                         </p>
                       </div>
                       <button
-                        className="rounded-md border border-rose-200 px-3 py-2 text-xs font-bold text-rose-700"
+                        className="rounded-sm border border-[#aacfb4] px-3 py-2 text-xs font-bold text-[#1f7a36]"
                         onClick={() => removeFromCart(item.entryId)}
                         type="button"
                       >
@@ -567,24 +584,25 @@ export default function RentalSystem() {
                 </div>
               )}
               <button
-                className="mt-4 h-12 w-full rounded-md bg-slate-950 px-4 font-bold text-white disabled:bg-slate-300"
+                className="mt-5 h-12 w-full rounded-sm bg-[#1f7a36] px-4 font-bold text-white transition hover:bg-[#17642b] disabled:bg-[#9fbea8]"
                 disabled={cart.length === 0}
                 onClick={() => setStep("rental")}
                 type="button"
               >
                 Continue
               </button>
+              </div>
             </section>
 
             {showItemSkeletons ? (
               <section
                 aria-label="Loading rental items"
-                className="grid gap-3 sm:grid-cols-2"
+                className="mt-4 grid gap-3 sm:grid-cols-2"
               >
                 {Array.from({ length: 4 }, (_, index) => (
                   <article
                     aria-hidden="true"
-                    className="overflow-hidden rounded-lg border border-slate-200 bg-white text-left shadow-sm"
+                    className="overflow-hidden rounded-md border border-[#eeeeee] bg-white text-left shadow-sm"
                     key={`rental-skeleton-${index}`}
                   >
                     <div className="aspect-[4/3] animate-pulse bg-slate-200" />
@@ -598,11 +616,12 @@ export default function RentalSystem() {
                 ))}
               </section>
             ) : floats.length === 0 ? (
-              <section className="rounded-lg border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-600 shadow-sm">
+              <section className="mt-4 rounded-md border border-dashed border-[#dddddd] bg-white p-6 text-center text-sm text-slate-600 shadow-sm">
                 No rental items are available yet.
               </section>
             ) : (
-              <section className="grid gap-3 sm:grid-cols-2">
+              <section className="mt-4 px-4 pb-4 sm:px-6 sm:pb-6">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {floats.map((float) => {
                   const selectedCount = cart.filter(
                     (item) => item.id === float.id,
@@ -611,15 +630,27 @@ export default function RentalSystem() {
                     float.availableQuantity - selectedCount,
                     0,
                   );
+                  const pendingQuantity = Math.max(float.pendingQuantity, 0);
                   const hasNoInventoryLeft = float.availableQuantity <= 0;
                   const hasSelectedAllAvailable =
                     float.availableQuantity > 0 && remainingQuantity <= 0;
                   const disableAddToCart =
                     hasNoInventoryLeft || hasSelectedAllAvailable;
+                  const availabilityLabel = hasNoInventoryLeft
+                    ? pendingQuantity > 0
+                      ? "Pending transaction"
+                      : "Currently unavailable"
+                    : hasSelectedAllAvailable
+                      ? pendingQuantity > 0
+                        ? "All available items selected, others pending"
+                        : "All available items selected"
+                      : pendingQuantity > 0
+                        ? `${remainingQuantity} available • ${pendingQuantity} pending`
+                        : `${remainingQuantity} available`;
 
                   return (
                     <article
-                      className="overflow-hidden rounded-lg border border-slate-200 bg-white text-left shadow-sm"
+                      className="overflow-hidden rounded-sm border border-[#ebebeb] bg-white text-left shadow-sm transition hover:border-[#aacfb4] hover:shadow-md"
                       key={float.id}
                     >
                       <span className="group relative block aspect-[4/3] overflow-hidden bg-slate-100">
@@ -630,24 +661,20 @@ export default function RentalSystem() {
                           sizes="(min-width: 640px) 50vw, 100vw"
                           src={float.imageUrl}
                         />
-                        <span className="pointer-events-none absolute inset-0 bg-slate-950/0 transition duration-300 group-hover:bg-slate-950/10" />
+                        <span className="pointer-events-none absolute inset-0 bg-[var(--rf-ink)]/0 transition duration-300 group-hover:bg-[var(--rf-blue)]/18" />
                       </span>
-                      <span className="block p-4">
-                        <span className="block text-lg font-bold">
+                      <span className="block p-3.5">
+                        <span className="line-clamp-2 block min-h-[2.75rem] text-lg font-bold leading-snug text-[#222]">
                           {float.name}
                         </span>
-                        <span className="mt-2 block text-sm text-slate-600">
-                          Rate: {formatRentalPrice(float.price)}
+                        <span className="mt-1 block text-base font-bold text-[#1f7a36]">
+                          {formatRentalPrice(float.price)}
                         </span>
-                        <span className="mt-1 block text-sm text-slate-500">
-                          {hasNoInventoryLeft
-                            ? "Currently unavailable"
-                            : hasSelectedAllAvailable
-                              ? "All available items selected"
-                              : `${remainingQuantity} available`}
+                        <span className="mt-1 block text-xs text-[#777]">
+                          {availabilityLabel}
                         </span>
                         <button
-                          className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-md bg-slate-950 px-4 text-sm font-bold text-white transition duration-200 hover:-translate-y-0.5 hover:bg-teal-700 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:hover:translate-y-0 disabled:hover:bg-slate-300 disabled:hover:shadow-none"
+                          className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-sm bg-[#1f7a36] px-4 text-sm font-bold text-white transition hover:bg-[#17642b] focus:outline-none focus:ring-2 focus:ring-[#1f7a36] focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#9fbea8]"
                           disabled={disableAddToCart}
                           onClick={() => addToCart(float)}
                           type="button"
@@ -678,22 +705,32 @@ export default function RentalSystem() {
                     </article>
                   );
                 })}
+                </div>
               </section>
             )}
           </>
+        ) : step === "rental" || step === "customer" || step === "rules" || step === "qr" ? null : (
+          <header className="mx-4 mt-4 rounded-md bg-[linear-gradient(180deg,#3fa55b_0%,#2f8f49_62%,#1f7a36_100%)] px-5 py-4 text-white sm:mx-6">
+            <BrandTitle />
+          </header>
         )}
 
         {step === "rental" && cart.length > 0 && (
-          <section className="rounded-lg bg-white p-4 shadow-sm">
+          <section className="mx-4 mt-4 overflow-hidden rounded-md border border-[#ebebeb] bg-white shadow-sm sm:mx-6">
+            <header className="bg-[linear-gradient(180deg,#3fa55b_0%,#2f8f49_62%,#1f7a36_100%)] px-5 py-4 text-white">
+              <BrandTitle />
+            </header>
+
+            <div className="p-4">
             <div className="mb-4 flex items-start justify-between gap-3">
               <div>
                 <h2 className="text-2xl font-bold">Rental Details</h2>
-                <p className="text-sm text-slate-600">
-                  Set the duration for each selected item.
+                <p className="text-sm text-[#666]">
+                  {totalQuantity} item{totalQuantity === 1 ? "" : "s"} selected
                 </p>
               </div>
               <button
-                className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold"
+                className="rounded-sm border border-[#aacfb4] px-3 py-2 text-sm font-semibold text-[#1f7a36]"
                 onClick={() => setStep("choose")}
                 type="button"
               >
@@ -704,18 +741,18 @@ export default function RentalSystem() {
             <div className="mb-4 space-y-3">
               {cart.map((item, index) => (
                 <div
-                  className="rounded-md border border-slate-200 p-4"
+                  className="rounded-sm border border-[#eeeeee] bg-white p-4"
                   key={item.entryId}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <b className="block text-base">{item.name}</b>
-                      <p className="text-sm text-slate-600">
+                      <p className="text-sm text-[#666]">
                         Unit {index + 1} · {formatRentalPrice(item.price)}
                       </p>
                     </div>
                     <button
-                      className="shrink-0 rounded-md px-1 py-1 text-sm font-semibold text-rose-700 transition hover:text-rose-800"
+                      className="shrink-0 rounded-sm border border-[#c1dcc9] px-2.5 py-1.5 text-xs font-medium text-[#1f7a36] transition hover:bg-[#edf5ef] hover:text-[#17642b]"
                       onClick={() => removeFromCart(item.entryId)}
                       type="button"
                     >
@@ -723,10 +760,10 @@ export default function RentalSystem() {
                     </button>
                   </div>
                   <div className="mt-4 flex items-end justify-between gap-6">
-                    <div className="flex items-center overflow-hidden rounded-md border border-slate-200 bg-slate-50">
+                    <div className="flex items-center overflow-hidden rounded-sm border border-[#eeeeee] bg-white">
                       <button
                         aria-label={`Decrease hours for ${item.name}`}
-                        className="grid h-10 w-10 place-items-center text-lg font-semibold text-slate-700 transition hover:bg-white disabled:cursor-not-allowed disabled:text-slate-300"
+                        className="grid h-10 w-10 place-items-center text-lg font-semibold text-[#444] transition hover:bg-[#edf5ef] disabled:cursor-not-allowed disabled:text-slate-300"
                         disabled={item.price === 0 || item.hours <= 1}
                         onClick={() =>
                           updateCartItem(item.entryId, {
@@ -737,12 +774,12 @@ export default function RentalSystem() {
                       >
                         -
                       </button>
-                      <span className="grid h-10 min-w-20 place-items-center border-x border-slate-200 bg-white px-3 text-sm font-bold text-slate-950">
+                      <span className="grid h-10 min-w-20 place-items-center border-x border-[#eeeeee] bg-white px-3 text-sm font-bold text-[#222]">
                         {item.hours} hr{item.hours === 1 ? "" : "s"}
                       </span>
                       <button
                         aria-label={`Increase hours for ${item.name}`}
-                        className="grid h-10 w-10 place-items-center text-lg font-semibold text-slate-700 transition hover:bg-white disabled:cursor-not-allowed disabled:text-slate-300"
+                        className="grid h-10 w-10 place-items-center text-lg font-semibold text-[#444] transition hover:bg-[#edf5ef] disabled:cursor-not-allowed disabled:text-slate-300"
                         disabled={
                           item.price === 0 || item.hours >= item.maxHours
                         }
@@ -757,58 +794,73 @@ export default function RentalSystem() {
                       </button>
                     </div>
                     <div className="text-right">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-[#aaa]">
                         Subtotal
                       </p>
-                      <b>{formatAmountDue(item.price * item.hours)}</b>
+                      <b className="text-base font-semibold text-[#6b4a3a]">
+                        {formatAmountDue(item.price * item.hours)}
+                      </b>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="rounded-md bg-slate-50 p-3 text-sm">
-              <div className="flex justify-between gap-3">
-                <span>Total amount due</span>
-                <b>{formatAmountDue(totalAmount)}</b>
+            <div className="rounded-sm bg-[#f4f9f5] px-4 py-3">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-normal text-[#3f5946]">
+                    Total amount due
+                  </p>
+                </div>
+                <b className="text-xl font-semibold leading-none text-[#1f7a36]">
+                  {formatAmountDue(totalAmount)}
+                </b>
               </div>
             </div>
 
             <button
-              className="mt-4 h-12 w-full rounded-md bg-slate-950 px-4 font-bold text-white disabled:bg-slate-300"
+              className="mt-4 h-12 w-full rounded-sm bg-[#1f7a36] px-4 font-bold text-white transition hover:bg-[#17642b] disabled:bg-[#9fbea8]"
               disabled={cart.length === 0}
               onClick={() => setStep("customer")}
               type="button"
             >
               Continue
             </button>
+            </div>
           </section>
         )}
 
         {step === "customer" && cart.length > 0 && (
-          <section className="rounded-lg bg-white p-4 shadow-sm">
-            <div className="mb-4 flex items-start justify-between gap-3">
-              <div>
-                <h2 className="text-2xl font-bold">Customer Details</h2>
-                <p className="text-sm text-slate-600">
-                  {totalQuantity} item{totalQuantity === 1 ? "" : "s"} selected
-                </p>
-              </div>
-              <button
-                className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold"
-                onClick={() => setStep("rental")}
-                type="button"
-              >
-                Back
-              </button>
-            </div>
+          <section className="mx-4 mt-4 overflow-hidden rounded-md border border-[#ebebeb] bg-white shadow-sm sm:mx-6">
+            <header className="bg-[linear-gradient(180deg,#3fa55b_0%,#2f8f49_62%,#1f7a36_100%)] px-5 py-4 text-white">
+              <BrandTitle />
+            </header>
 
-            <form className="space-y-4" onSubmit={submitDetails}>
+            <div className="p-4">
+              <div className="mb-4 flex items-start justify-between gap-3">
+                <div>
+                  <h2 className="text-2xl font-bold">Customer Details</h2>
+                  <p className="text-sm text-[#666]">
+                    {totalQuantity} item{totalQuantity === 1 ? "" : "s"} selected
+                  </p>
+                </div>
+                <button
+                  className="rounded-sm border border-[#aacfb4] px-3 py-2 text-sm font-semibold text-[#1f7a36]"
+                  onClick={() => setStep("rental")}
+                  type="button"
+                >
+                  Back
+                </button>
+              </div>
+
+              <form className="space-y-4" onSubmit={submitDetails}>
               <label className="block text-sm font-semibold">
                 Full name
                 <input
-                  className="mt-2 h-12 w-full rounded-md border border-slate-300 px-3 text-base outline-none focus:border-teal-600"
+                  className="mt-2 h-12 w-full rounded-md border border-[#dddddd] bg-white px-3 text-base outline-none focus:border-[#bbbbbb]"
                   onChange={(event) => setCustomerName(event.target.value)}
+                  placeholder="Enter full name"
                   required
                   value={customerName}
                 />
@@ -816,7 +868,7 @@ export default function RentalSystem() {
               <label className="block text-sm font-semibold">
                 Cottage number
                 <input
-                  className="mt-2 h-12 w-full rounded-md border border-slate-300 px-3 text-base outline-none focus:border-teal-600"
+                  className="mt-2 h-12 w-full rounded-md border border-[#dddddd] bg-white px-3 text-base outline-none focus:border-[#bbbbbb]"
                   onChange={(event) => {
                     setCottageNumber(event.target.value);
                     setVerificationMessage("");
@@ -829,7 +881,7 @@ export default function RentalSystem() {
               <label className="block text-sm font-semibold">
                 Mobile number
                 <input
-                  className="mt-2 h-12 w-full rounded-md border border-slate-300 px-3 text-base outline-none focus:border-teal-600"
+                  className="mt-2 h-12 w-full rounded-md border border-[#dddddd] bg-white px-3 text-base outline-none focus:border-[#bbbbbb]"
                   inputMode="tel"
                   maxLength={13}
                   onChange={(event) => {
@@ -848,7 +900,7 @@ export default function RentalSystem() {
                   Mobile verification code
                   <div className="mt-2 grid gap-2 sm:grid-cols-[minmax(0,1fr)_150px]">
                     <input
-                      className="h-12 w-full rounded-md border border-slate-300 px-3 text-base outline-none focus:border-teal-600"
+                      className="h-12 w-full rounded-md border border-[#dddddd] bg-white px-3 text-base outline-none focus:border-[#bbbbbb]"
                       inputMode="numeric"
                       maxLength={6}
                       onChange={(event) => {
@@ -862,7 +914,7 @@ export default function RentalSystem() {
                       value={verificationCode}
                     />
                     <button
-                      className="h-12 rounded-md border border-slate-300 px-4 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-50"
+                      className="h-12 rounded-md border border-[var(--rf-blue)]/30 bg-[color:color-mix(in_srgb,var(--rf-yellow)_30%,white)] px-4 text-sm font-bold text-[var(--rf-ink)] disabled:cursor-not-allowed disabled:opacity-50"
                       disabled={!mobile.trim() || isSendingVerificationCode}
                       onClick={sendVerificationCode}
                       type="button"
@@ -875,8 +927,8 @@ export default function RentalSystem() {
                       className={`mt-2 block text-xs font-semibold ${
                         hasSentVerificationCode &&
                         verificationMessage.startsWith("Verification code")
-                          ? "text-emerald-700"
-                          : "text-rose-700"
+                          ? "text-[var(--rf-blue-deep)]"
+                          : "text-[var(--rf-orange-deep)]"
                       }`}
                     >
                       {verificationMessage}
@@ -885,14 +937,14 @@ export default function RentalSystem() {
                 </label>
               ) : (
                 verificationMessage && (
-                  <span className="block text-xs font-semibold text-rose-700">
+                  <span className="block text-xs font-semibold text-[var(--rf-orange-deep)]">
                     {verificationMessage}
                   </span>
                 )
               )}
 
               {hasFreeItem && (
-                <div className="rounded-md bg-emerald-50 p-3 text-sm font-semibold text-emerald-800">
+                <div className="rounded-md bg-[color:color-mix(in_srgb,var(--rf-blue)_18%,white)] p-3 text-sm font-semibold text-[var(--rf-ink)]">
                   Free items are limited to 1 hour and 1 quantity per verified
                   mobile number every 24 hours.
                 </div>
@@ -908,7 +960,7 @@ export default function RentalSystem() {
                       <label
                         className={`flex h-12 items-center justify-center rounded-md border text-sm font-semibold ${
                           paymentMode === mode
-                            ? "border-teal-700 bg-teal-50 text-teal-800"
+                            ? "border-[var(--rf-blue)] bg-[color:color-mix(in_srgb,var(--rf-blue)_18%,white)] text-[var(--rf-ink)]"
                             : "border-slate-200"
                         } ${
                           mode === "GCash" && !gcashEnabled
@@ -931,106 +983,123 @@ export default function RentalSystem() {
                 </fieldset>
               )}
 
-              <div className="rounded-md bg-slate-50 p-3 text-sm">
-                <div className="flex justify-between gap-3">
-                  <span>Total amount due</span>
-                  <b>{formatAmountDue(totalAmount)}</b>
+              <div className="rounded-sm bg-[#f4f9f5] px-4 py-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-normal text-[#3f5946]">
+                      Total amount due
+                    </p>
+                  </div>
+                  <b className="text-xl font-semibold leading-none text-[#1f7a36]">
+                    {formatAmountDue(totalAmount)}
+                  </b>
                 </div>
               </div>
 
               <button
-                className="h-12 w-full rounded-md bg-slate-950 px-4 font-bold text-white disabled:bg-slate-300"
+              className="h-12 w-full rounded-sm bg-[#1f7a36] px-4 font-bold text-white transition hover:bg-[#17642b] disabled:bg-[#9fbea8]"
                 disabled={isCheckingVerificationCode}
                 type="submit"
               >
                 {isCheckingVerificationCode ? "Checking..." : "Continue"}
               </button>
-            </form>
+              </form>
+            </div>
           </section>
         )}
 
         {step === "rules" && cart.length > 0 && (
-          <section className="rounded-lg bg-white p-4 shadow-sm">
-            <div className="flex items-start justify-between gap-3">
-              <h2 className="mt-1 text-2xl font-bold">Guidelines and Fees</h2>
+          <section className="mx-4 mt-4 overflow-hidden rounded-md border border-[#ebebeb] bg-white shadow-sm sm:mx-6">
+            <header className="bg-[linear-gradient(180deg,#3fa55b_0%,#2f8f49_62%,#1f7a36_100%)] px-5 py-4 text-white">
+              <BrandTitle />
+            </header>
+
+            <div className="p-4">
+              <div className="flex items-start justify-between gap-3">
+                <h2 className="mt-1 text-2xl font-bold">Guidelines and Fees</h2>
+                <button
+                  className="rounded-sm border border-[#aacfb4] px-3 py-2 text-sm font-semibold text-[#1f7a36]"
+                  onClick={() => setStep("customer")}
+                  type="button"
+                >
+                  Back
+                </button>
+              </div>
+              <div className="mt-4 space-y-2">
+                {damageFeeItems.map((item) => (
+                  <div
+                    className="rounded-sm bg-[color:color-mix(in_srgb,var(--rf-orange)_12%,white)] px-4 py-3 text-sm text-[var(--rf-ink)]"
+                    key={item.name}
+                  >
+                    <span className="font-medium">Lost or damaged {item.name}:</span>{" "}
+                    <b>{formatPeso(item.damageFee)}</b> each
+                    {item.quantity > 1 ? ` (${item.quantity} selected)` : ""}
+                  </div>
+                ))}
+              </div>
+              <ul className="mt-4 space-y-3">
+                {rules.map((rule) => (
+                  <li
+                    className="flex gap-3 rounded-sm border border-[#f1f1f1] p-3 text-sm text-[#555]"
+                    key={rule}
+                  >
+                    <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-[color:color-mix(in_srgb,var(--rf-yellow)_55%,white)] text-[var(--rf-orange-deep)]">
+                      <svg
+                        aria-hidden="true"
+                        className="size-3"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2.25"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M5 13l4 4L19 7" />
+                      </svg>
+                    </span>
+                    {rule}
+                  </li>
+                ))}
+              </ul>
+              <label className="mt-4 flex items-center gap-3 text-sm font-semibold leading-5">
+                <input
+                  checked={acceptedRules}
+                  className="size-5 shrink-0"
+                  onChange={(event) => setAcceptedRules(event.target.checked)}
+                  type="checkbox"
+                />
+                I understand and agree to these rental terms.
+              </label>
               <button
-                className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold"
-                onClick={() => setStep("customer")}
+                className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-sm bg-[#1f7a36] px-4 font-bold text-white transition hover:bg-[#17642b] disabled:bg-[#9fbea8]"
+                disabled={!acceptedRules || isGeneratingQr}
+                onClick={createQrPass}
                 type="button"
               >
-                Back
+                {isGeneratingQr && (
+                  <span className="size-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                )}
+                Confirm
               </button>
             </div>
-            <div className="mt-4 space-y-2">
-              {damageFeeItems.map((item) => (
-                <div
-                  className="rounded-md bg-rose-50 p-4 text-sm text-rose-950"
-                  key={item.name}
-                >
-                  Lost or damaged {item.name}:{" "}
-                  <b>{formatPeso(item.damageFee)}</b> each
-                  {item.quantity > 1 ? ` (${item.quantity} selected)` : ""}
-                </div>
-              ))}
-            </div>
-            <ul className="mt-4 space-y-3">
-              {rules.map((rule) => (
-                <li
-                  className="flex gap-3 rounded-md border border-slate-100 p-3 text-sm text-slate-700"
-                  key={rule}
-                >
-                  <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-teal-50 text-teal-700">
-                    <svg
-                      aria-hidden="true"
-                      className="size-3"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2.25"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M5 13l4 4L19 7" />
-                    </svg>
-                  </span>
-                  {rule}
-                </li>
-              ))}
-            </ul>
-            <label className="mt-4 flex items-center gap-3 text-sm font-semibold leading-5">
-              <input
-                checked={acceptedRules}
-                className="size-5 shrink-0"
-                onChange={(event) => setAcceptedRules(event.target.checked)}
-                type="checkbox"
-              />
-              I understand and agree to these rental terms.
-            </label>
-            <button
-              className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-md bg-slate-950 px-4 font-bold text-white disabled:bg-slate-300"
-              disabled={!acceptedRules || isGeneratingQr}
-              onClick={createQrPass}
-              type="button"
-            >
-              {isGeneratingQr && (
-                <span className="size-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-              )}
-              Confirm
-            </button>
           </section>
         )}
 
         {step === "qr" && currentRental && (
-          <section className="rounded-lg bg-white p-4 text-center shadow-sm">
+          <section className="mx-4 mt-4 overflow-hidden rounded-md border border-[#ebebeb] bg-white shadow-sm sm:mx-6">
+            <header className="bg-[linear-gradient(180deg,#3fa55b_0%,#2f8f49_62%,#1f7a36_100%)] px-5 py-4 text-white">
+              <BrandTitle />
+            </header>
+            <div className="p-4 text-center">
             <h2 className="mt-1 text-2xl font-bold">{currentRental.id}</h2>
-            <p className="mt-1 text-sm text-slate-600">
+            <p className="mt-1 text-sm text-[#666]">
               Present QR code to cashier (expires in{" "}
               {formatPendingExpirationLabel()})
             </p>
             <div className="my-5">
               <QrPass rental={currentRental} />
             </div>
-            <div className="rounded-md bg-slate-50 p-4 text-left text-sm">
+            <div className="rounded-sm bg-[#fafafa] p-4 text-left text-sm">
               <div className="flex justify-between gap-3">
                 <span>Customer</span>
                 <b>{currentRental.customerName}</b>
@@ -1046,11 +1115,11 @@ export default function RentalSystem() {
               <div className="mt-3 space-y-2">
                 {getRentalItems(currentRental).map((item, index) => (
                   <div
-                    className="rounded-md border border-slate-200 p-3"
+                    className="rounded-sm border border-[#eeeeee] p-3"
                     key={`${item.floatId}-${index}`}
                   >
                     <b>{item.floatName}</b>
-                    <p className="text-slate-600">
+                    <p className="text-[#666]">
                       {formatRentalDuration(item.durationMinutes)} ·{" "}
                       {formatAmountDue(item.subtotal)}
                     </p>
@@ -1063,19 +1132,20 @@ export default function RentalSystem() {
               </div>
             </div>
             <button
-              className="mt-4 h-12 w-full rounded-md bg-slate-950 px-4 font-bold text-white"
+              className="mt-4 h-12 w-full rounded-sm bg-[#1f7a36] px-4 font-bold text-white transition hover:bg-[#17642b]"
               onClick={() => saveQrImage(currentRental)}
               type="button"
             >
               Save QR image
             </button>
             <button
-              className="mt-3 h-12 w-full rounded-md border border-slate-200 px-4 font-bold"
+              className="mt-3 h-12 w-full rounded-sm border border-[#dddddd] px-4 font-bold text-[#555]"
               onClick={confirmNewRental}
               type="button"
             >
               New rental
             </button>
+            </div>
           </section>
         )}
       </section>
@@ -1088,7 +1158,7 @@ export default function RentalSystem() {
               behavior: "smooth",
             })
           }
-          className="fixed bottom-5 right-5 z-40 flex items-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-bold text-white shadow-xl transition hover:-translate-y-1 hover:bg-teal-700"
+          className="fixed bottom-5 right-5 z-40 flex items-center gap-2 rounded-full bg-[var(--rf-blue)] px-5 py-3 text-sm font-bold text-white shadow-xl transition hover:-translate-y-1 hover:bg-[var(--rf-blue-deep)]"
         >
           <svg
             aria-hidden="true"
@@ -1109,8 +1179,45 @@ export default function RentalSystem() {
       )}
       {toast && (
         <div className="pointer-events-none fixed inset-x-4 top-4 z-50 flex justify-center">
-          <div className="w-full max-w-sm rounded-md bg-slate-950 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-950/25">
+          <div className="w-full max-w-sm rounded-md bg-[var(--rf-ink)] px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-[color:color-mix(in_srgb,var(--rf-blue)_30%,#000)]">
             {toast.message}
+          </div>
+        </div>
+      )}
+      {isNewRentalModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[color:color-mix(in_srgb,var(--rf-ink)_55%,transparent)] px-4"
+          onClick={() => setIsNewRentalModalOpen(false)}
+        >
+          <div
+            className="w-full max-w-md rounded-md bg-white p-5 shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="min-w-0">
+              <h3 className="text-xl font-bold text-[var(--rf-ink)]">
+                Start a new rental?
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-[#5c6f62]">
+                Please make sure you have saved this QR image or shown this QR
+                pass before continuing.
+              </p>
+            </div>
+            <div className="mt-5 flex flex-col gap-2">
+              <button
+                className="h-11 rounded-sm bg-[#1f7a36] px-4 text-sm font-bold text-white transition hover:bg-[#17642b]"
+                onClick={resetCheckout}
+                type="button"
+              >
+                Start new rental
+              </button>
+              <button
+                className="h-11 rounded-sm border border-[#dddddd] px-4 text-sm font-semibold text-[#555] transition hover:bg-[#f7f7f7]"
+                onClick={() => setIsNewRentalModalOpen(false)}
+                type="button"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
